@@ -1,0 +1,5 @@
+sqlite3
+smtplib
+ssl
+email
+hashlib
