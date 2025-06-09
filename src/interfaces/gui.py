@@ -1,4 +1,5 @@
-from tkinter import Tk, Label, Button, Entry, messagebox
+import customtkinter as ctk
+from tkinter import messagebox
 from database.crud import (
     crear_usuario,
     verificar_usuario,
@@ -7,10 +8,14 @@ from database.crud import (
 )
 from auth.email_utils import enviar_codigo
 
+# Configuración inicial de CustomTkinter
+ctk.set_appearance_mode("System")  # "Light", "Dark" o "System"
+ctk.set_default_color_theme("blue")  # Temas: "blue", "green", "dark-blue"
+
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Urban Nest - Sistema de Usuarios")
+        self.root.title("Urban Nest - ")
         self.root.geometry("500x400")
         self.codigo_verificacion = None
         self.usuario_actual = None
@@ -25,78 +30,105 @@ class App:
     def mostrar_menu_principal(self):
         """Muestra el menú principal"""
         self.limpiar_pantalla()
-        Label(self.root, text="Urban Nest", font=('Arial', 16, 'bold')).pack(pady=20)
         
-        Button(self.root, text="Iniciar Sesión", command=self.mostrar_login, 
-              width=20, height=2).pack(pady=10)
-        Button(self.root, text="Registrarse", command=self.mostrar_registro,
-              width=20, height=2).pack(pady=10)
+        # Frame principal para centrar contenido
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=50)
+        
+        ctk.CTkLabel(frame, text="Urban Nest", 
+                    font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
+        
+        ctk.CTkButton(frame, text="Iniciar Sesión", command=self.mostrar_login,
+                    width=200, height=40, corner_radius=8).pack(pady=10)
+        ctk.CTkButton(frame, text="Registrarse", command=self.mostrar_registro,
+                    width=200, height=40, corner_radius=8).pack(pady=10)
 
     def mostrar_login(self):
         """Muestra la interfaz de login"""
         self.limpiar_pantalla()
-        Label(self.root, text="Inicio de Sesión", font=('Arial', 14)).pack(pady=10)
         
-        Label(self.root, text="Usuario:").pack()
-        self.login_user = Entry(self.root, width=30)
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=20)
+        
+        ctk.CTkLabel(frame, text="Inicio de Sesión",
+                    font=ctk.CTkFont(size=16)).pack(pady=10)
+        
+        ctk.CTkLabel(frame, text="Usuario:").pack(pady=(10, 0))
+        self.login_user = ctk.CTkEntry(frame, width=200)
         self.login_user.pack()
         
-        Label(self.root, text="Contraseña:").pack()
-        self.login_pass = Entry(self.root, show="*", width=30)
+        ctk.CTkLabel(frame, text="Contraseña:").pack(pady=(10, 0))
+        self.login_pass = ctk.CTkEntry(frame, show="*", width=200)
         self.login_pass.pack()
         
-        Button(self.root, text="Ingresar", command=self.verificar_login,
-              width=15).pack(pady=15)
-        Button(self.root, text="Regresar", command=self.mostrar_menu_principal,
-              width=10).pack()
+        ctk.CTkButton(frame, text="Ingresar", command=self.verificar_login,
+                    width=150, height=35, corner_radius=8).pack(pady=20)
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal,
+                    width=100, height=30, corner_radius=8, fg_color="gray40").pack()
 
     def mostrar_registro(self):
         """Muestra la interfaz de registro"""
         self.limpiar_pantalla()
-        Label(self.root, text="Registro de Usuario", font=('Arial', 14)).pack(pady=10)
         
-        Label(self.root, text="Nombre de usuario:").pack()
-        self.reg_user = Entry(self.root, width=30)
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=20)
+        
+        ctk.CTkLabel(frame, text="Registro de Usuario",
+                    font=ctk.CTkFont(size=16)).pack(pady=10)
+        
+        ctk.CTkLabel(frame, text="Nombre de usuario:").pack(pady=(10, 0))
+        self.reg_user = ctk.CTkEntry(frame, width=200)
         self.reg_user.pack()
         
-        Label(self.root, text="Email:").pack()
-        self.reg_email = Entry(self.root, width=30)
+        ctk.CTkLabel(frame, text="Email:").pack(pady=(10, 0))
+        self.reg_email = ctk.CTkEntry(frame, width=200)
         self.reg_email.pack()
         
-        Label(self.root, text="Contraseña:").pack()
-        self.reg_pass = Entry(self.root, show="*", width=30)
+        ctk.CTkLabel(frame, text="Contraseña:").pack(pady=(10, 0))
+        self.reg_pass = ctk.CTkEntry(frame, show="*", width=200)
         self.reg_pass.pack()
         
-        Button(self.root, text="Registrarse", command=self.registrar_usuario,
-              width=15).pack(pady=15)
-        Button(self.root, text="Regresar", command=self.mostrar_menu_principal,
-              width=10).pack()
+        ctk.CTkButton(frame, text="Registrarse", command=self.registrar_usuario,width=150,
+                    height=35, corner_radius=8).pack(pady=20)
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal,width=100,
+                    height=30, corner_radius=8, fg_color="gray40").pack()
 
     def mostrar_verificacion(self):
         """Muestra la interfaz de verificación"""
         self.limpiar_pantalla()
-        Label(self.root, text="Verificación de Email", font=('Arial', 14)).pack(pady=10)
-        Label(self.root, text=f"Código enviado a: {self.email_usuario}").pack()
         
-        Label(self.root, text="Ingrese el código de verificación:").pack()
-        self.codigo_entry = Entry(self.root, width=30)
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=20)
+        
+        ctk.CTkLabel(frame, text="Verificación de Email",
+                    font=ctk.CTkFont(size=16)).pack(pady=10)
+        ctk.CTkLabel(frame, text=f"Código enviado a: {self.email_usuario}").pack()
+        
+        ctk.CTkLabel(frame, text="Ingrese el código de verificación:").pack(pady=(10, 0))
+        self.codigo_entry = ctk.CTkEntry(frame, width=200)
         self.codigo_entry.pack(pady=10)
         
-        Button(self.root, text="Verificar", command=self.verificar_codigo,
-              width=15).pack(pady=5)
-        Button(self.root, text="Reenviar código", command=self.reenviar_codigo,
-              width=15).pack(pady=5)
-        Button(self.root, text="Cancelar", command=self.mostrar_menu_principal,
-              width=10).pack()
+        ctk.CTkButton(frame, text="Verificar", command=self.verificar_codigo,
+                    width=150, height=35, corner_radius=8).pack(pady=5)
+        ctk.CTkButton(frame, text="Reenviar código", command=self.reenviar_codigo,
+                    width=150, height=35, corner_radius=8).pack(pady=5)
+        ctk.CTkButton(frame, text="Cancelar", command=self.mostrar_menu_principal,
+                    width=100, height=30, corner_radius=8, fg_color="gray40").pack()
 
     def mostrar_panel_usuario(self):
         """Muestra el panel del usuario"""
         self.limpiar_pantalla()
-        Label(self.root, text=f"Bienvenido, {self.usuario_actual}", 
-              font=('Arial', 14)).pack(pady=20)
-        Button(self.root, text="Cerrar Sesión", 
-              command=self.mostrar_menu_principal, width=15).pack()
+        
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=50)
+        
+        ctk.CTkLabel(frame, text=f"Bienvenido, {self.usuario_actual}",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(pady=20)
+        ctk.CTkButton(frame, text="Cerrar Sesión", 
+                    command=self.mostrar_menu_principal,
+                    width=150, height=35, corner_radius=8).pack()
 
+    # Métodos de lógica (se mantienen igual que en la versión original)
     def verificar_login(self):
         """Verifica las credenciales del usuario"""
         usuario = self.login_user.get()

@@ -4,7 +4,7 @@ import ssl
 from email.message import EmailMessage
 import datetime
 
-EMAIL_REMITENTE = 'verificacion.dynasty@gmail.com'
+EMAIL_REMITENTE = 'auth.urbannest@gmail.com'
 CONTRASEÑA_EMAIL = 'hemh fnun yabe eluu'
 
 def generar_codigo():
