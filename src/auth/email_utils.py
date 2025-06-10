@@ -17,7 +17,7 @@ def enviar_codigo(destinatario, nombre_usuario):
     mensaje = EmailMessage()
     mensaje['From'] = EMAIL_REMITENTE
     mensaje['To'] = destinatario
-    mensaje['Subject'] = f'🔐 Código de verificación para {nombre_usuario}'
+    mensaje['Subject'] = f'Código de verificación para {nombre_usuario}'
     
     # Versión HTML del email
     html_content = f"""
