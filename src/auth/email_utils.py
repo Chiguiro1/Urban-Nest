@@ -4,12 +4,23 @@ import ssl
 from email.message import EmailMessage
 import datetime
 
+# =========================
+# INFORMACION DEL EMAIL DE ENVIO
+# =========================
 EMAIL_REMITENTE = 'auth.urbannest@gmail.com'
 CONTRASEÑA_EMAIL = 'wvyw ebow bjok neet'
+
+# =========================
+# GENERACION DEL CODIGO 
+# =========================
 
 def generar_codigo():
     """Genera un código de verificación de 6 dígitos"""
     return str(random.randint(100000, 999999))
+
+# =========================
+# FUNCION PARA ENVIAR EL CODIGO
+# =========================
 
 def enviar_codigo(destinatario, nombre_usuario):
     """Envía un código de verificación al email del usuario"""
@@ -19,7 +30,11 @@ def enviar_codigo(destinatario, nombre_usuario):
     mensaje['To'] = destinatario
     mensaje['Subject'] = f'Código de verificación para {nombre_usuario}'
     
-    # Versión HTML del email
+    
+# =========================
+# HTML DEL EMAIL DE VERFIFICACION
+# =========================
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -81,6 +96,10 @@ def enviar_codigo(destinatario, nombre_usuario):
     """)
     
     mensaje.add_alternative(html_content, subtype='html')
+
+# =========================
+# ENVIO DEL MENSAJE
+# =========================
 
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context()) as server:
