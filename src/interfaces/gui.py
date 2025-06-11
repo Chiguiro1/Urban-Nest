@@ -3,7 +3,10 @@
 # =======================
 import customtkinter as ctk
 from tkinter import messagebox
-from auth.email_utils import enviar_codigo
+from auth.email_utils import (
+    enviar_codigo,
+    enviar_soporte_tecnico
+)
 from database.crud import (
     crear_usuario,
     verificar_usuario,
@@ -71,7 +74,7 @@ class App:
         self.login_pass = ctk.CTkEntry(frame, show="*", width=200)
         self.login_pass.pack()
         ctk.CTkButton(frame, text="Ingresar", command=self.verificar_login, width=150, height=35).pack(pady=20)
-        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="gray40").pack()
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="#7a8894").pack()
 
     def mostrar_registro(self):
         """Pantalla de registro de usuario."""
@@ -90,7 +93,7 @@ class App:
         self.reg_pass = ctk.CTkEntry(frame, show="*", width=200)
         self.reg_pass.pack()
         ctk.CTkButton(frame, text="Registrarse", command=self.registrar_usuario, width=150, height=35).pack(pady=20)
-        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="gray40").pack()
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="#7a8894").pack()
 
     def mostrar_verificacion(self):
         """Pantalla para ingresar el código de verificación."""
@@ -105,7 +108,7 @@ class App:
         self.codigo_entry.pack(pady=10)
         ctk.CTkButton(frame, text="Verificar", command=self.verificar_codigo, width=150, height=35).pack(pady=5)
         ctk.CTkButton(frame, text="Reenviar código", command=self.reenviar_codigo, width=150, height=35).pack(pady=5)
-        ctk.CTkButton(frame, text="Cancelar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="gray40").pack()
+        ctk.CTkButton(frame, text="Cancelar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="#7a8894").pack()
 
     def mostrar_panel_usuario(self):
         """Panel principal tras iniciar sesión."""
@@ -115,16 +118,56 @@ class App:
 
         ctk.CTkLabel(frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=20, weight="bold")).place(x=50, y=10)
         ctk.CTkLabel(frame, font=ctk.CTkFont(size=15), text=f"""Hola {self.usuario_actual} bienvenido a Urban Nest, el futuro de las bienes raíces.\nContamos con las oportunidades de hogar más accesibles y hermosas en el mercado.\nEn la colmena todos deben ser felices.""").place(x=50, y=200)
-        ctk.CTkButton(frame, text="Cerrar Sesión", command=self.mostrar_menu_principal, width=150, height=35).place(x=50, y=400)
+        ctk.CTkButton(frame, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=50, y=300)
+        ctk.CTkButton(frame, text="Cerrar Sesión", command=self.mostrar_menu_principal,fg_color="#7a8894", width=150, height=35).place(x=50, y=400)
 
-    def  soporte_tecnico(self):
-        """Pantalla de soporte técnico."""
+    
+    def soporte_tecnico(self):
         self.limpiar_pantalla()
+
         frame = ctk.CTkScrollableFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
-        ctk.CTkLabel(frame, text="Soporte Técnico", font=ctk.CTkFont(size=16)).pack(pady=10)
-        ctk.CTkLabel(frame, text="Para soporte técnico, por favor envía un correo a:")
+        ctk.CTkLabel(frame, text="Soporte Técnico", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+        ctk.CTkLabel(frame, text="Por favor llena el siguiente formulario y describe tu problema:", anchor="w").pack(pady=5, fill="x")
+
+        # Campos del formulario
+        entry_nombre = ctk.CTkEntry(frame, placeholder_text="Nombre de usuario")
+        entry_nombre.pack(pady=5, fill="x")
+
+        entry_correo = ctk.CTkEntry(frame, placeholder_text="Correo electrónico")
+        entry_correo.pack(pady=5, fill="x")
+
+        entry_asunto = ctk.CTkEntry(frame, placeholder_text="Asunto")
+        entry_asunto.pack(pady=5, fill="x")
+
+        textbox_mensaje = ctk.CTkTextbox(frame, height=150)
+        textbox_mensaje.pack(pady=5, fill="both")
+
+        def enviar():
+            nombre = entry_nombre.get().strip()
+            correo = entry_correo.get().strip()
+            asunto = entry_asunto.get().strip()
+            mensaje = textbox_mensaje.get("1.0", "end").strip()
+
+            if not (nombre and correo and asunto and mensaje):
+                messagebox.showwarning("Campos incompletos", "Por favor llena todos los campos.")
+                return
+
+            resultado = enviar_soporte_tecnico(nombre, correo, asunto, mensaje)
+
+            if resultado:
+                messagebox.showinfo("Éxito", "Tu solicitud fue enviada correctamente.")
+                # Opcional: limpiar los campos
+                entry_nombre.delete(0, "end")
+                entry_correo.delete(0, "end")
+                entry_asunto.delete(0, "end")
+                textbox_mensaje.delete("1.0", "end")
+            else:
+                messagebox.showerror("Error", "Ocurrió un error al enviar tu mensaje. Intenta más tarde.")
+
+        ctk.CTkButton(frame, text="Enviar a soporte", command=enviar).pack(pady=20)
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_panel_usuario, width=100, height=30, fg_color="#7a8894").pack(pady=10)
 
     # =========================
     # LÓGICA DE AUTENTICACIÓN

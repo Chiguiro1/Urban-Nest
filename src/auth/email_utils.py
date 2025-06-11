@@ -10,6 +10,11 @@ import datetime
 EMAIL_REMITENTE = 'auth.urbannest@gmail.com'
 CONTRASEÑA_EMAIL = 'wvyw ebow bjok neet'
 
+EMAIL_SOORTE_TECNICO = [
+    "luis.rua@tecnicopascualbravo.edu.co",
+    "juan.jimenezm@tecnicopascualbravo.edu.co",
+    "quinterorojoemanuel@gmail.com"
+]
 # =========================
 # GENERACION DEL CODIGO 
 # =========================
@@ -97,6 +102,7 @@ def enviar_codigo(destinatario, nombre_usuario):
     
     mensaje.add_alternative(html_content, subtype='html')
 
+
 # =========================
 # ENVIO DEL MENSAJE
 # =========================
@@ -109,3 +115,88 @@ def enviar_codigo(destinatario, nombre_usuario):
     except Exception as e:
         print(f"Error al enviar email: {e}")
         return None
+
+
+def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
+    """Envía un mensaje al soporte técnico con nombre y correo del usuario"""
+    email = EmailMessage()
+    email['From'] = EMAIL_REMITENTE
+    email['To'] = ", ".join(EMAIL_SOORTE_TECNICO)
+    email['Subject'] = f"[Soporte Técnico] {asunto}"
+    email.set_content(f"""
+    Nombre del usuario: {nombre_usuario}
+    Correo del usuario: {correo_usuario}
+    Asunto: {asunto}
+
+    Mensaje:
+    {mensaje}
+    """)
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }}
+            .header {{
+                background-color: #4a6fa5;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                border-radius: 5px 5px 0 0;
+            }}
+            .content {{
+                padding: 20px;
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 0 0 5px 5px;
+            }}
+            .field {{
+                margin-bottom: 10px;
+            }}
+            .label {{
+                font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Solicitud de Soporte Técnico</h1>
+        </div>
+        <div class="content">
+            <div class="field">
+                <span class="label">Nombre del usuario:</span> {nombre_usuario}
+            </div>
+            <div class="field">
+                <span class="label">Correo del usuario:</span> {correo_usuario}
+            </div>
+            <div class="field">
+                <span class="label">Asunto:</span> {asunto}
+            </div>
+            <div class="field">
+                <span class="label">Mensaje:</span><br>
+                <p>{mensaje}</p>
+            </div>
+            <p><em>Enviado el {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</em></p>
+        </div>
+    </body>
+    </html>
+    """
+
+    email.add_alternative(html_content, subtype='html')
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context()) as server:
+            server.login(EMAIL_REMITENTE, CONTRASEÑA_EMAIL)
+            server.send_message(email)
+            return True
+    except Exception as e:
+        print(f"Error al enviar soporte técnico: {e}")
+        return False
