@@ -14,12 +14,12 @@ from database.crud import (
     marcar_como_verificado
 )
 
-
+registrado = False
 # =======================
 # CONFIGURACIÓN
 # =======================
 ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("NightTrain.json")
+ctk.set_default_color_theme("/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json")
 
 # ================
 # CLASE PRINCIPAL
@@ -53,12 +53,22 @@ class App:
     def mostrar_menu_principal(self):
         """Menú principal con opciones de login y registro."""
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        frame.pack(expand=True, fill="both", padx=50, pady=50)
+        frame = ctk.CTkFrame(self.root, fg_color="#062741")
+        frame.pack(expand=True, fill="both", padx=200, pady=100)
 
         ctk.CTkLabel(frame, text="Urban Nest", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
         ctk.CTkButton(frame, text="Iniciar Sesión", command=self.mostrar_login, width=200, height=40).pack(pady=10)
         ctk.CTkButton(frame, text="Registrarse", command=self.mostrar_registro, width=200, height=40).pack(pady=10)
+        # Texto de Soporte técnico
+        soporte_label = ctk.CTkLabel(frame, text="FAQ", text_color="#5b40c5", cursor="hand2")
+        soporte_label.pack(pady=(10, 0))
+        soporte_label.bind("<Button-1>", lambda e: self.preguntas_frecuentes())  # Llama tu función de soporte
+
+        # Texto de Contáctanos
+        contacto_label = ctk.CTkLabel(frame, text="Contáctanos", text_color="#5b40c5", cursor="hand2")
+        contacto_label.pack()
+        contacto_label.bind("<Button-1>", lambda e: self.contactanos())  # Llama tu función de contacto
+
 
     def mostrar_login(self):
         """Pantalla de inicio de sesión."""
@@ -108,24 +118,26 @@ class App:
         self.codigo_entry.pack(pady=10)
         ctk.CTkButton(frame, text="Verificar", command=self.verificar_codigo, width=150, height=35).pack(pady=5)
         ctk.CTkButton(frame, text="Reenviar código", command=self.reenviar_codigo, width=150, height=35).pack(pady=5)
-        ctk.CTkButton(frame, text="Cancelar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="#7a8894").pack()
+        ctk.CTkButton(frame, text="Cancelar", command=self.mostrar_menu_principal, width=100, height=30, fg_color="#7a8894").pack(pady=5)
 
     def mostrar_panel_usuario(self):
         """Panel principal tras iniciar sesión."""
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        frame.pack(expand=True, fill="both", padx=50, pady=50)
+        sidebar = ctk.CTkFrame(self.root, width=200, corner_radius=0,fg_color="#062741")
+        sidebar.pack(side="left", fill="y")
 
-        ctk.CTkLabel(frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=20, weight="bold")).place(x=50, y=10)
-        ctk.CTkLabel(frame, font=ctk.CTkFont(size=15), text=f"""Hola {self.usuario_actual} bienvenido a Urban Nest, el futuro de las bienes raíces.\nContamos con las oportunidades de hogar más accesibles y hermosas en el mercado.\nEn la colmena todos deben ser felices.""").place(x=50, y=200)
-        ctk.CTkButton(frame, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=50, y=300)
-        ctk.CTkButton(frame, text="Cerrar Sesión", command=self.mostrar_menu_principal,fg_color="#7a8894", width=150, height=35).place(x=50, y=400)
+
+        #ctk.CTkLabel(frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=20, weight="bold")).place(x=50, y=10)
+        #ctk.CTkLabel(frame, font=ctk.CTkFont(size=15), text=f"""Hola {self.usuario_actual} bienvenido a Urban Nest, el futuro de las bienes raíces.\nContamos con las oportunidades de hogar más accesibles y hermosas en el mercado.\nEn la colmena todos deben ser felices.""").place(x=50, y=200)
+        ctk.CTkButton(sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
+        ctk.CTkButton(sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
+        ctk.CTkButton(sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal,fg_color="#7a8894", width=150, height=35).place(x=25, y=400)
 
     
     def soporte_tecnico(self):
         self.limpiar_pantalla()
 
-        frame = ctk.CTkScrollableFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Soporte Técnico", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
@@ -169,6 +181,88 @@ class App:
         ctk.CTkButton(frame, text="Enviar a soporte", command=enviar).pack(pady=20)
         ctk.CTkButton(frame, text="Regresar", command=self.mostrar_panel_usuario, width=100, height=30, fg_color="#7a8894").pack(pady=10)
 
+
+    def preguntas_frecuentes(self):
+        self.limpiar_pantalla()
+
+        frame = ctk.CTkScrollableFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=20)
+
+        ctk.CTkLabel(
+            frame,
+            text="Preguntas Frecuentes y Soluciones",
+            font=ctk.CTkFont(size=18, weight="bold")
+        ).pack(pady=(10, 20))
+
+        preguntas_y_respuestas = [
+            {
+                "pregunta": "¿Qué hago si no recibo el código de verificación?",
+                "respuesta": "Verifica tu carpeta de spam o correo no deseado. Asegúrate de haber escrito correctamente tu correo. Si el problema persiste, comunícate con soporte técnico."
+            },
+
+            {
+                "pregunta": "¿Por qué me aparece un error al iniciar sesión?",
+                "respuesta": "Puede ser por un correo o contraseña incorrecta. Asegúrate de escribirlos bien y verifica si tienes acceso a tu correo para restablecer la contraseña si es necesario."
+            },
+            {
+                "pregunta": "¿Cómo contacto al soporte técnico?",
+                "respuesta": "Desde el menú principal, selecciona 'Soporte Técnico' y completa el formulario. También puedes escribir directamente a auth.urbannest@gmail.com."
+            },
+            {
+                "pregunta": "¿Mis datos están seguros?",
+                "respuesta": "Sí. UrbanNest utiliza cifrado SSL y autenticación por correo para proteger tu información personal."
+            },
+
+            {
+                "pregunta": "¿Por qué se cierra la sesión automáticamente?",
+                "respuesta": "Por seguridad, tu sesión se cierra automáticamente después de un tiempo de inactividad prolongado. Esto ayuda a proteger tu cuenta."
+            },
+
+            {
+                "pregunta": "¿Puedo eliminar mi cuenta?",
+                "respuesta": "Sí. Para solicitar la eliminación de tu cuenta, escribe a auth.urbannest@gmail.com desde el correo asociado a tu cuenta."
+            }
+
+        ]
+
+        for item in preguntas_y_respuestas:
+            ctk.CTkLabel(
+                frame,
+                text=f"❓ {item['pregunta']}",
+                font=ctk.CTkFont(size=14, weight="bold"),
+                anchor="w",
+                justify="left",
+                wraplength=600
+            ).pack(fill="x", padx=10, pady=(5, 0))
+
+            ctk.CTkLabel(
+                frame,
+                text=f"   {item['respuesta']}",
+                font=ctk.CTkFont(size=13),
+                anchor="w",
+                justify="left",
+                wraplength=600
+            ).pack(fill="x", padx=20, pady=(0, 10))
+        
+        def regresar():
+            if self.usuario_actual:
+                self.mostrar_panel_usuario()
+            else:
+                self.mostrar_menu_principal()
+        ctk.CTkButton(frame, text="Regresar", command=regresar, width=100, height=30, fg_color="#7a8894").pack(pady=10)
+            
+
+    def contactanos(self):
+        """Pantalla de contacto para soporte técnico."""
+        self.limpiar_pantalla()
+
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=50, pady=20)
+
+        ctk.CTkLabel(frame, text="Contáctanos", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+        ctk.CTkLabel(frame, text="Si tienes alguna duda o necesitas ayuda, envíanos un correo a:").pack(pady=(10, 0))
+        ctk.CTkLabel(frame, text="auth.urbannest@gmail.com").pack(pady=(5, 20))
+
     # =========================
     # LÓGICA DE AUTENTICACIÓN
     # =========================
@@ -189,6 +283,8 @@ class App:
             messagebox.showwarning("Error", "Debes verificar tu email primero")
             return
 
+        global registrado
+        registrado = True
         self.usuario_actual = usuario
         self.mostrar_panel_usuario()
 
