@@ -193,13 +193,16 @@ class App:
         self.limpiar_pantalla()
         sidebar = ctk.CTkFrame(self.root, width=200, corner_radius=0, fg_color="#062741")
         sidebar.pack(side="left", fill="y")
+        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame.pack(side="left", fill="both", expand=True, padx=0, pady=20)
 
-        ctk.CTkButton(sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
-        ctk.CTkButton(sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
-        ctk.CTkButton(sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).place(x=25, y=450)
+        #ctk.CTkButton(sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
+        #ctk.CTkButton(sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
+        #ctk.CTkButton(sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).place(x=25, y=450)
         ctk.CTkButton(sidebar, text="Asesorías", command=self.mostrar_asesorias, width=150, height=35).place(x=25, y=500)
-        ctk.CTkButton(sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).place(x=25, y=400)
-
+        ctk.CTkButton(sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).place(x=25, y=600)
+        ctk.CTkLabel(sidebar, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
+        ctk.CTkLabel(frame, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
     # ============================
     # ========== AYUDA ==========
     # ============================
