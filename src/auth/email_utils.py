@@ -3,6 +3,8 @@ import random
 import ssl
 from email.message import EmailMessage
 import datetime
+import requests
+import socket
 
 # =========================
 # INFORMACION DEL EMAIL DE ENVIO
@@ -22,6 +24,30 @@ EMAIL_SOORTE_TECNICO = [
 def generar_codigo():
     """Genera un código de verificación de 6 dígitos"""
     return str(random.randint(100000, 999999))
+
+# =========================
+#  OBTENCION DE IP PUBLICA Y LOCAL
+# =========================
+
+def obtener_ip_publica():
+    try:
+        ip = requests.get("https://api.ipify.org").text
+        return ip
+    except Exception as e:
+        return f"Error al obtener IP pública: {e}"
+
+def obtener_ip_local():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_local = s.getsockname()[0]
+        s.close()
+        return ip_local
+    except Exception as e:
+        return f"Error al obtener IP local: {e}"
+
+
+
 
 # =========================
 # FUNCION PARA ENVIAR EL CODIGO
@@ -176,6 +202,12 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
             </div>
             <div class="field">
                 <span class="label">Correo del usuario:</span> {correo_usuario}
+            </div>
+            <div class="field">
+                <span class="label">IP Local:</span> {obtener_ip_local()}
+            </div>
+            <div class="field">
+                <span class="label">IP Pública:</span> {obtener_ip_publica()}
             </div>
             <div class="field">
                 <span class="label">Asunto:</span> {asunto}
