@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple
 
 def conectar():
     """Establece conexión con la base de datos"""
@@ -12,6 +12,7 @@ def hash_contraseña(contra: str) -> str:
 
 def crear_usuario(nombre: str, email: str, contra: str) -> bool:
     """Crea un nuevo usuario en la base de datos"""
+    conn = None
     try:
         conn = conectar()
         cursor = conn.cursor()
@@ -25,10 +26,12 @@ def crear_usuario(nombre: str, email: str, contra: str) -> bool:
         print(f"Error al crear usuario: {e}")
         return False
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
 
 def verificar_usuario(nombre: str, contra: str) -> Tuple[bool, bool]:
     """Verifica si las credenciales son correctas y si el usuario está verificado"""
+    conn = None
     try:
         conn = conectar()
         cursor = conn.cursor()
@@ -46,10 +49,12 @@ def verificar_usuario(nombre: str, contra: str) -> Tuple[bool, bool]:
         print(f"Error al verificar credenciales: {e}")
         return (False, False)
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
 
 def obtener_email_usuario(nombre: str) -> Optional[str]:
     """Obtiene el email de un usuario por su nombre"""
+    conn = None
     try:
         conn = conectar()
         cursor = conn.cursor()
@@ -60,10 +65,12 @@ def obtener_email_usuario(nombre: str) -> Optional[str]:
         print(f"Error al obtener email: {e}")
         return None
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
 
 def marcar_como_verificado(nombre: str) -> bool:
     """Marca un usuario como verificado por email"""
+    conn = None
     try:
         conn = conectar()
         cursor = conn.cursor()
@@ -77,4 +84,5 @@ def marcar_como_verificado(nombre: str) -> bool:
         print(f"Error al marcar como verificado: {e}")
         return False
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()

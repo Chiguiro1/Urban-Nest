@@ -20,7 +20,7 @@ registrado = False
 # CONFIGURACIÓN DE LA INTERFAZ
 # ===========================
 ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json")
+ctk.set_default_color_theme(r"C:/Users/sapoq/Desktop/Programacion/Project_Python/Urban-Nest/src/interfaces/NightTrain.json")
 
 # ===========================
 # CLASE PRINCIPAL DE LA APP
@@ -61,11 +61,11 @@ class App:
         # Enlaces de ayuda
         soporte_label = ctk.CTkLabel(frame, text="FAQ", text_color="#5b40c5", cursor="hand2")
         soporte_label.pack(pady=(10, 0))
-        soporte_label.bind("<Button-1>", lambda e: self.preguntas_frecuentes())
+        soporte_label.bind("<Button-1>", lambda _: self.preguntas_frecuentes())
 
         contacto_label = ctk.CTkLabel(frame, text="Contáctanos", text_color="#5b40c5", cursor="hand2")
         contacto_label.pack()
-        contacto_label.bind("<Button-1>", lambda e: self.contactanos())
+        contacto_label.bind("<Button-1>", lambda _: self.contactanos())
         
 
     # ====================
@@ -173,9 +173,12 @@ class App:
     def verificar_codigo(self):
         codigo = self.codigo_entry.get()
         if codigo == self.codigo_verificacion:
-            marcar_como_verificado(self.usuario_actual)
-            messagebox.showinfo("Éxito", "Cuenta verificada correctamente")
-            self.mostrar_panel_usuario()
+            if self.usuario_actual is not None:
+                marcar_como_verificado(self.usuario_actual)
+                messagebox.showinfo("Éxito", "Cuenta verificada correctamente")
+                self.mostrar_panel_usuario()
+            else:
+                messagebox.showerror("Error", "No se pudo verificar el usuario actual.")
         else:
             messagebox.showerror("Error", "Código incorrecto")
 
