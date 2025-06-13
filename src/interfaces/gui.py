@@ -20,7 +20,7 @@ registrado = False
 # CONFIGURACIÓN DE LA INTERFAZ
 # ===========================
 ctk.set_appearance_mode("System")
-ctk.set_default_color_theme(r"C:/Users/sapoq/Desktop/Programacion/Project_Python/Urban-Nest/src/interfaces/NightTrain.json")
+ctk.set_default_color_theme(r"/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json")
 
 # ===========================
 # CLASE PRINCIPAL DE LA APP
