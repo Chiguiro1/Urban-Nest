@@ -8,10 +8,9 @@ def main():
     #-------------------------------
 
     # Crear y ejecutar la aplicación
-    root = ctk.CTk()    
-    app = App(root)
-    root.mainloop()
+    app = App()
+    app.mainloop()
     #-------------------------------
 
 if __name__ == "__main__":
-    main()  
+    main()

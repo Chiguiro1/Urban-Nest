@@ -20,22 +20,29 @@ registrado = False
 # CONFIGURACIÓN DE LA INTERFAZ
 # ===========================
 ctk.set_appearance_mode("System")
-ctk.set_default_color_theme(r"/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json")
+#ctk.set_default_color_theme(r"/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json") ----------------------------------------------------
+ctk.set_default_color_theme(r"C:/Users/sapoq/Desktop/Programacion/Project_Python/Urban-Nest/src/interfaces/NightTrain.json")
 
 # ===========================
 # CLASE PRINCIPAL DE LA APP
 # ===========================
-class App:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Urban Nest")   
-        self.root.geometry("800x700")
-        self.root.resizable(False, False)
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Urban Nest")   
+        self.geometry("800x700")
+        self.resizable(False, False)
 
         # Variables de estado
         self.codigo_verificacion = None
         self.usuario_actual = None
         self.email_usuario = None
+
+        # Atributos para el sidebar
+        self.sidebar_expanded = False
+        self.sidebar_width_min = 50
+        self.sidebar_width_max = 200
+        self.sidebar_current_width = self.sidebar_width_min
 
         self.mostrar_menu_principal()
 
@@ -43,7 +50,7 @@ class App:
     # UTILIDADES DE INTERFAZ
     # ========================
     def limpiar_pantalla(self):
-        for widget in self.root.winfo_children():
+        for widget in self.winfo_children():
             widget.destroy()
 
     # ====================
@@ -51,7 +58,7 @@ class App:
     # ====================
     def mostrar_menu_principal(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="#062741")
+        frame = ctk.CTkFrame(self, fg_color="#062741")
         frame.pack(expand=True, fill="both", padx=200, pady=100)
 
         ctk.CTkLabel(frame, text="Urban Nest", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
@@ -73,7 +80,7 @@ class App:
     # ====================
     def mostrar_login(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Inicio de Sesión", font=ctk.CTkFont(size=16)).pack(pady=10)
@@ -88,24 +95,24 @@ class App:
 
 
     def verificar_login(self):
-        usuario = self.login_user.get()
+        email = self.login_user.get()
         contra = self.login_pass.get()
 
-        if not usuario or not contra:
+        if not email or not contra:
             messagebox.showwarning("Error", "Todos los campos son obligatorios")
             return
 
-        existe, verificado = verificar_usuario(usuario, contra)
+        # Solo verifica si el email existe
+        existe = verificar_usuario(email)
         if not existe:
-            messagebox.showerror("Error", "Usuario o contraseña incorrectos")
+            messagebox.showerror("Error", "El email no existe")
             return
-        if not verificado:
-            messagebox.showwarning("Error", "Debes verificar tu email primero")
-            return
+        # Aquí deberías agregar la verificación de contraseña y estado si lo necesitas
+        # Si solo quieres verificar el email, puedes continuar aquí
 
         global registrado
         registrado = True
-        self.usuario_actual = usuario
+        self.usuario_actual = email
         self.mostrar_panel_usuario()
 
     # ===========================
@@ -113,7 +120,7 @@ class App:
     # ===========================
     def mostrar_registro(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Registro de Usuario", font=ctk.CTkFont(size=16)).pack(pady=10)
@@ -158,7 +165,7 @@ class App:
     # =============================
     def mostrar_verificacion(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Verificación de Email", font=ctk.CTkFont(size=16)).pack(pady=10)
@@ -189,29 +196,73 @@ class App:
         else:
             messagebox.showerror("Error", "No se pudo reenviar el código")
 
+
+    def toggle_sidebar(self):
+        self.sidebar_expanded = not self.sidebar_expanded
+        self.animate_sidebar()
+        
+    def animate_sidebar(self):
+        target_width = self.sidebar_width_max if self.sidebar_expanded else self.sidebar_width_min
+        if self.sidebar_current_width != target_width:
+            step = 10 if self.sidebar_expanded else -10
+            self.sidebar_current_width += step
+            if hasattr(self, 'sidebar'):
+                self.sidebar.configure(width=self.sidebar_current_width) # type: ignore
+
+            # Mostrar/ocultar botones cuando esté expandido
+            if self.sidebar_expanded and self.sidebar_current_width >= self.sidebar_width_max:
+                self.button1.grid(row=1, column=0, pady=10, padx=10)
+                self.button2.grid(row=2, column=0, pady=10, padx=10)
+                self.button3.grid(row=3, column=0, pady=10, padx=10)
+            elif not self.sidebar_expanded and self.sidebar_current_width <= self.sidebar_width_min:
+                self.button1.grid_forget()
+                self.button2.grid_forget()
+                self.button3.grid_forget()
+
+            self.after(10, self.animate_sidebar)
     # ================================
     # ========== PANEL USUARIO ==========
     # ================================
     def mostrar_panel_usuario(self):
         self.limpiar_pantalla()
-        sidebar = ctk.CTkFrame(self.root, width=200, corner_radius=0, fg_color="#062741")
-        sidebar.pack(side="left", fill="y")
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        frame.pack(side="left", fill="both", expand=True, padx=0, pady=20)
+        
+        # Estado inicial del sidebar
+        self.sidebar_expanded = False
+        self.sidebar_width_min = 50
+        self.sidebar_width_max = 200
+        self.sidebar_current_width = self.sidebar_width_min
+        
+        
+        self.sidebar = ctk.CTkFrame(self, width=self.sidebar_width_min, height=500, corner_radius=0)
+        self.sidebar.grid(row=0, column=0, sticky="ns")
+        self.sidebar.grid_propagate(False) # No cambia tamaño con widgets
+        
+        #Contendo del sidebar
+        self.toggle_button = ctk.CTkButton(self.sidebar, text="☰", command=self.toggle_sidebar, width=40)
+        self.toggle_button.grid(row=0, column=0, pady=10, padx=10)
 
-        #ctk.CTkButton(sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
-        #ctk.CTkButton(sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
-        #ctk.CTkButton(sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).place(x=25, y=450)
-        ctk.CTkButton(sidebar, text="Asesorías", command=self.mostrar_asesorias, width=150, height=35).place(x=25, y=500)
-        ctk.CTkButton(sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).place(x=25, y=600)
-        ctk.CTkLabel(sidebar, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
-        ctk.CTkLabel(frame, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
+        self.button1 = ctk.CTkButton(self.sidebar, text="Opción 1")
+        self.button2 = ctk.CTkButton(self.sidebar, text="Opción 2")
+        self.button3 = ctk.CTkButton(self.sidebar, text="Opción 3")
+        
+        
+
+
+
+
+        ctk.CTkButton(self.sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
+        ctk.CTkButton(self.sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
+        ctk.CTkButton(self.sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).place(x=25, y=450)
+        ctk.CTkButton(self.sidebar, text="Asesorías", command=self.mostrar_asesorias, width=150, height=35).place(x=25, y=500)
+        ctk.CTkButton(self.sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).place(x=25, y=600)
+        ctk.CTkLabel(self.sidebar, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
+        ctk.CTkLabel(self.sidebar, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
     # ============================
     # ========== AYUDA ==========
     # ============================
     def soporte_tecnico(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Soporte Técnico", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
@@ -255,7 +306,7 @@ class App:
 
     def preguntas_frecuentes(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkScrollableFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Preguntas Frecuentes y Soluciones", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(10, 20))
@@ -284,7 +335,7 @@ class App:
 
     def contactanos(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Contáctanos", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
@@ -303,9 +354,13 @@ class App:
 
     def mostrar_asesorias(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=50, pady=20)
 
         ctk.CTkLabel(frame, text="Asesorías Personalizadas", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
         ctk.CTkLabel(frame, text="Próximamente disponible...").pack(pady=(10, 0))
         ctk.CTkButton(frame, text="Regresar", command=self.mostrar_panel_usuario, width=100, height=30, fg_color="#7a8894").pack(pady=10)
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()

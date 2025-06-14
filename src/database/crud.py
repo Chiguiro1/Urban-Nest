@@ -29,25 +29,21 @@ def crear_usuario(nombre: str, email: str, contra: str) -> bool:
         if conn is not None:
             conn.close()
 
-def verificar_usuario(nombre: str, contra: str) -> Tuple[bool, bool]:
-    """Verifica si las credenciales son correctas y si el usuario está verificado"""
+def verificar_usuario(email: str) -> bool:
+    """Verifica si el email existe en la base de datos"""
     conn = None
     try:
         conn = conectar()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT contra, verificado FROM usuarios WHERE nombre = ?", 
-            (nombre,)
+            "SELECT 1 FROM usuarios WHERE email = ?", 
+            (email,)
         )
         resultado = cursor.fetchone()
-        
-        if resultado:
-            contra_hash, verificado = resultado
-            return (contra_hash == hash_contraseña(contra), verificado)
-        return (False, False)
+        return resultado is not None
     except sqlite3.Error as e:
-        print(f"Error al verificar credenciales: {e}")
-        return (False, False)
+        print(f"Error al verificar email: {e}")
+        return False
     finally:
         if conn is not None:
             conn.close()
