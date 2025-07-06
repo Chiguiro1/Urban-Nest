@@ -10,7 +10,7 @@ import socket
 # INFORMACION DEL EMAIL DE ENVIO
 # =========================
 EMAIL_REMITENTE = 'auth.urbannest@gmail.com'
-CONTRASEÑA_EMAIL = 'wvyw ebow bjok neet'
+CONTRASEÑA_EMAIL = 'grtx fuom lkah fbod'
 
 EMAIL_SOORTE_TECNICO = [
     "luis.rua@tecnicopascualbravo.edu.co",
