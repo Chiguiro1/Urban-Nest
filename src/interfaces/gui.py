@@ -2,6 +2,8 @@
 # IMPORTS Y CONFIGURACIÓN
 # =======================
 import customtkinter as ctk
+import os
+from PIL import Image
 from tkinter import messagebox
 from auth.email_utils import (
     enviar_codigo,
@@ -20,8 +22,10 @@ registrado = False
 # CONFIGURACIÓN DE LA INTERFAZ
 # ===========================
 ctk.set_appearance_mode("System")
-#ctk.set_default_color_theme(r"/home/chiguiro/Proyectos/Urban_Nest/src/interfaces/NightTrain.json") ----------------------------------------------------
-ctk.set_default_color_theme(r"C:/Users/sapoq/Desktop/Programacion/Project_Python/Urban-Nest/src/interfaces/NightTrain.json")
+Base_Dir = os.path.dirname(__file__)
+Path_Style = os.path.join(Base_Dir,"NightTrain.json")
+Path_Logo = os.path.join(Base_Dir,"Logo.png")
+ctk.set_default_color_theme(Path_Style)
 
 # ===========================
 # CLASE PRINCIPAL DE LA APP
@@ -60,7 +64,8 @@ class App(ctk.CTk):
         self.limpiar_pantalla()
         frame = ctk.CTkFrame(self, fg_color="#062741")
         frame.pack(expand=True, fill="both", padx=200, pady=100)
-
+        logo_img = ctk.CTkImage(Image.open(Path_Logo), size=(120, 120))
+        ctk.CTkLabel(frame, image=logo_img, text="").pack(pady=10)
         ctk.CTkLabel(frame, text="Urban Nest", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
         ctk.CTkButton(frame, text="Iniciar Sesión", command=self.mostrar_login, width=200, height=40).pack(pady=10)
         ctk.CTkButton(frame, text="Registrarse", command=self.mostrar_registro, width=200, height=40).pack(pady=10)
