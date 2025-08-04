@@ -3,3 +3,4 @@ smtplib
 ssl
 email
 hashlib
+Pillow
