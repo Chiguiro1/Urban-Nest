@@ -16,6 +16,7 @@ from database.crud import (
     marcar_como_verificado
 )
 
+global registrado
 registrado = False
 
 # ===========================
@@ -100,25 +101,39 @@ class App(ctk.CTk):
 
 
     def verificar_login(self):
-        email = self.login_user.get()
+        user = self.login_user.get()
         contra = self.login_pass.get()
-
-        if not email or not contra:
+        
+        if not user or not contra:
             messagebox.showwarning("Error", "Todos los campos son obligatorios")
             return
 
-        # Solo verifica si el email existe
-        existe = verificar_usuario(email)
+        # Verifica si el email existe
+        existe = verificar_usuario(user)
         if not existe:
             messagebox.showerror("Error", "El email no existe")
             return
-        # Aquí deberías agregar la verificación de contraseña y estado si lo necesitas
-        # Si solo quieres verificar el email, puedes continuar aquí
 
-        global registrado
-        registrado = True
-        self.usuario_actual = email
-        self.mostrar_panel_usuario()
+        # Verifica la contraseña
+        from database.crud import hash_contraseña, conectar
+        conn = None
+        try:
+            conn = conectar()
+            cursor = conn.cursor()
+            cursor.execute("SELECT contra FROM usuarios WHERE email = ?", (user,))
+            resultado = cursor.fetchone()
+            if resultado and resultado[0] == hash_contraseña(contra):
+                global registrado
+                registrado = True
+                self.usuario_actual = user
+                self.mostrar_panel_usuario()
+            else:
+                messagebox.showerror("Error", "La contraseña o el email no concuerdan")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al verificar usuario: {e}")
+        finally:
+            if conn:
+                conn.close()
 
     # ===========================
     # ========== REGISTRO ==========
@@ -230,38 +245,47 @@ class App(ctk.CTk):
     # ================================
     def mostrar_panel_usuario(self):
         self.limpiar_pantalla()
-        
+
+        # Configuración de la grilla principal
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+
         # Estado inicial del sidebar
         self.sidebar_expanded = False
         self.sidebar_width_min = 50
         self.sidebar_width_max = 200
         self.sidebar_current_width = self.sidebar_width_min
-        
-        
-        self.sidebar = ctk.CTkFrame(self, width=self.sidebar_width_min, height=500, corner_radius=0)
+
+        # Sidebar
+        self.sidebar = ctk.CTkFrame(self, width=self.sidebar_width_min, height=700, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="ns")
-        self.sidebar.grid_propagate(False) # No cambia tamaño con widgets
-        
-        #Contendo del sidebar
+        self.sidebar.grid_propagate(False)
+
         self.toggle_button = ctk.CTkButton(self.sidebar, text="☰", command=self.toggle_sidebar, width=40)
-        self.toggle_button.grid(row=0, column=0, pady=10, padx=10)
+        self.toggle_button.pack(pady=10, padx=10)
 
         self.button1 = ctk.CTkButton(self.sidebar, text="Opción 1")
         self.button2 = ctk.CTkButton(self.sidebar, text="Opción 2")
         self.button3 = ctk.CTkButton(self.sidebar, text="Opción 3")
-        
-        
+        # Los botones se muestran/ocultan en animate_sidebar
 
+        ctk.CTkButton(self.sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).pack(pady=(30, 0))
+        ctk.CTkButton(self.sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).pack(pady=(10, 0))
+        ctk.CTkButton(self.sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).pack(pady=(10, 0))
+        ctk.CTkButton(self.sidebar, text="Asesorías", command=self.mostrar_asesorias, width=150, height=35).pack(pady=(10, 0))
+        ctk.CTkButton(self.sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).pack(pady=(30, 0))
 
+        # Contenido principal
+        main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        main_frame.grid(row=0, column=1, sticky="nsew", padx=40, pady=40)
+        main_frame.grid_rowconfigure(0, weight=1)
+        main_frame.grid_columnconfigure(0, weight=1)
 
-
-        ctk.CTkButton(self.sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).place(x=25, y=300)
-        ctk.CTkButton(self.sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).place(x=25, y=350)
-        ctk.CTkButton(self.sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).place(x=25, y=450)
-        ctk.CTkButton(self.sidebar, text="Asesorías", command=self.mostrar_asesorias, width=150, height=35).place(x=25, y=500)
-        ctk.CTkButton(self.sidebar, text="Cerrar Sesión", command=self.mostrar_menu_principal, fg_color="#7a8894", width=150, height=35).place(x=25, y=600)
-        ctk.CTkLabel(self.sidebar, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
-        ctk.CTkLabel(self.sidebar, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
+        ctk.CTkLabel(main_frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
+        ctk.CTkLabel(main_frame, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
+        ctk.CTkLabel(main_frame, text="""Se los juro que me
+                     voy a suicidar si es que se daña esta mierda
+                     hijos de puta""", font=ctk.CTkFont(size=30,weight="bold")).pack(pady=20)
     # ============================
     # ========== AYUDA ==========
     # ============================

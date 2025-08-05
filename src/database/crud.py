@@ -48,6 +48,27 @@ def verificar_usuario(email: str) -> bool:
         if conn is not None:
             conn.close()
 
+def verificar_usuario_contraseña(email: str, contra: str) -> bool:
+    """Verifica si el email y la contraseña coinciden"""
+    conn = None
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT contra FROM usuarios WHERE email = ?", 
+            (email,)
+        )
+        resultado = cursor.fetchone()
+        if resultado and resultado[0] == hash_contraseña(contra):
+            return True
+        return False
+    except sqlite3.Error as e:
+        print(f"Error al verificar usuario y contraseña: {e}")
+        return False
+    finally:
+        if conn is not None:
+            conn.close()
+
 def obtener_email_usuario(nombre: str) -> Optional[str]:
     """Obtiene el email de un usuario por su nombre"""
     conn = None
