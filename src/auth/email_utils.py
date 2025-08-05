@@ -232,3 +232,4 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
     except Exception as e:
         print(f"Error al enviar soporte técnico: {e}")
         return False
+
