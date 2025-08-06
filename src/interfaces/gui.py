@@ -15,6 +15,12 @@ from database.crud import (
     obtener_email_usuario,
     marcar_como_verificado
 )
+import tempfile
+import folium
+try:
+    from tkinterweb import HtmlFrame
+except ImportError:
+    HtmlFrame = None
 
 global registrado
 registrado = False
@@ -269,6 +275,7 @@ class App(ctk.CTk):
         self.button3 = ctk.CTkButton(self.sidebar, text="Opción 3")
         # Los botones se muestran/ocultan en animate_sidebar
 
+        ctk.CTkButton(self.sidebar, text="Mapa de Proyectos", command=self.mostrar_mapa_proyectos, width=150, height=35).pack(pady=(10, 0))
         ctk.CTkButton(self.sidebar, text="Soporte Técnico", command=self.soporte_tecnico, width=150, height=35).pack(pady=(30, 0))
         ctk.CTkButton(self.sidebar, text="Preguntas Frecuentes", command=self.preguntas_frecuentes, width=150, height=35).pack(pady=(10, 0))
         ctk.CTkButton(self.sidebar, text="Contáctanos", command=self.contactanos, width=150, height=35).pack(pady=(10, 0))
@@ -283,9 +290,32 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(main_frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=20)
         ctk.CTkLabel(main_frame, text="Panel de Usuario", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
-        ctk.CTkLabel(main_frame, text="""Se los juro que me
-                     voy a suicidar si es que se daña esta mierda
-                     hijos de puta""", font=ctk.CTkFont(size=30,weight="bold")).pack(pady=20)
+
+    def mostrar_mapa_proyectos(self):
+        self.limpiar_pantalla()
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True, fill="both", padx=10, pady=10)
+
+        ctk.CTkLabel(frame, text="Mapa de Proyectos", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+
+        # Solo el mapa de Medellín, sin marcadores
+        mapa = folium.Map(location=[6.2442, -75.5812], zoom_start=13)
+
+        # Guardar mapa en archivo temporal
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+        mapa.save(temp_file.name)
+        temp_file.close()
+
+        # Mostrar el mapa en la interfaz
+        if HtmlFrame is not None:
+            html_frame = HtmlFrame(frame, horizontal_scrollbar="auto")
+            html_frame.pack(expand=True, fill="both")
+            html_frame.load_file(temp_file.name)
+        else:
+            ctk.CTkLabel(frame, text="tkinterweb no está instalado. Instálalo con: pip install tkinterweb").pack(pady=20)
+
+        ctk.CTkButton(frame, text="Regresar", command=self.mostrar_panel_usuario, width=100, height=30, fg_color="#7a8894").pack(pady=10)
+
     # ============================
     # ========== AYUDA ==========
     # ============================
@@ -393,3 +423,9 @@ class App(ctk.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+    frame.pack(expand=True, fill="both", padx=50, pady=20)
+
+    ctk.CTkLabel(frame, text="Asesorías Personalizadas", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+    ctk.CTkLabel(frame, text="Próximamente disponible...").pack(pady=(10, 0))
+    ctk.CTkButton(frame, text="Regresar", command=self.mostrar_panel_usuario, width=100, height=30, fg_color="#7a8894").pack(pady=10)
+
