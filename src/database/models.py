@@ -104,3 +104,4 @@ def init_db():
     crear_tabla_proyectos()
     crear_tabla_citas()
     seed_db()
+# (No hay referencias a IA en este archivo)

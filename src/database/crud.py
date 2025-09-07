@@ -139,3 +139,5 @@ def listar_citas_por_proyecto(proyecto_id, fecha):
     res = [r[0] for r in cursor.fetchall()]
     conn.close()
     return res
+
+# (No hay referencias a IA en este archivo)

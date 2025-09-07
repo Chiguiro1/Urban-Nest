@@ -256,3 +256,5 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
             f.write(f"[{datetime.datetime.now().isoformat()}] Error email soporte: {correo_usuario} - {e}\n")
         return False
 
+# (No hay referencias a IA en este archivo)
+

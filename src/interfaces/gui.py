@@ -94,18 +94,30 @@ class App(ctk.CTk):
         ctk.CTkButton(frame, text="Registrar", command=registro_action, width=200).pack(pady=10)
         ctk.CTkButton(frame, text="Volver", command=self.mostrar_login, width=200, fg_color="#407996").pack(pady=5)
 
+    def mostrar_navbar(self):
+        # Elimina cualquier navbar anterior
+        for widget in self.winfo_children():
+            if isinstance(widget, ctk.CTkFrame) and getattr(widget, 'is_navbar', False):
+                widget.destroy()
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#1e214b")
+        navbar.is_navbar = True
+        navbar.pack(side="top", fill="x")
+        navbar.grid_columnconfigure(0, weight=1)
+        navbar.grid_columnconfigure(1, weight=8)
+        ctk.CTkLabel(navbar, text=f"Usuario: {self.usuario_actual}", font=ctk.CTkFont(size=14), text_color="#dbf2f6", fg_color="#1e214b").grid(row=0, column=0, padx=20, pady=10, sticky="w")
+        nav_btn_frame = ctk.CTkFrame(navbar, fg_color="#407996")
+        nav_btn_frame.grid(row=0, column=1, pady=10, padx=10, sticky="e")
+        btn_style = {"fg_color": "#407996", "hover_color": "#49829f", "text_color": "#fff", "corner_radius": 8, "border_width": 0, "height": 32, "width": 110}
+        ctk.CTkButton(nav_btn_frame, text="Agendar Cita", command=self.mostrar_form_agendar, **btn_style).pack(side="left", padx=3)
+        ctk.CTkButton(nav_btn_frame, text="Mis Citas", command=self.mostrar_mis_citas, **btn_style).pack(side="left", padx=3)
+        ctk.CTkButton(nav_btn_frame, text="Soporte Técnico", command=self.mostrar_soporte_tecnico, **btn_style).pack(side="left", padx=3)
+        ctk.CTkButton(nav_btn_frame, text="Preguntas Frecuentes", command=self.mostrar_faq, **btn_style).pack(side="left", padx=3)
+        ctk.CTkButton(nav_btn_frame, text="Contáctanos", command=self.mostrar_contacto, **btn_style).pack(side="left", padx=3)
+        ctk.CTkButton(nav_btn_frame, text="Cerrar Sesión", command=self.mostrar_login, fg_color="#7a8894", hover_color="#565B5E", text_color="#fff", corner_radius=8, border_width=0, height=32, width=110).pack(side="left", padx=3)
+
     def mostrar_panel_usuario(self):
         self.limpiar_pantalla()
-        self.sidebar = ctk.CTkFrame(self, width=180, fg_color="#0d355d")
-        self.sidebar.pack(side="left", fill="y")
-        ctk.CTkLabel(self.sidebar, image=self.logo_img, text="").pack(pady=10)
-        ctk.CTkButton(self.sidebar, text="Agendar Cita", command=self.mostrar_form_agendar, width=160).pack(pady=5)
-        ctk.CTkButton(self.sidebar, text="Mis Citas", command=self.mostrar_mis_citas, width=160).pack(pady=5)
-        ctk.CTkButton(self.sidebar, text="Soporte Técnico", command=self.mostrar_soporte_tecnico, width=160).pack(pady=5)
-        ctk.CTkButton(self.sidebar, text="Preguntas Frecuentes", command=self.mostrar_faq, width=160).pack(pady=5)
-        ctk.CTkButton(self.sidebar, text="Contáctanos", command=self.mostrar_contacto, width=160).pack(pady=5)
-        ctk.CTkButton(self.sidebar, text="Cerrar Sesión", command=self.mostrar_login, width=160, fg_color="#7a8894").pack(pady=30)
-        # Panel principal
+        self.mostrar_navbar()
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(side="left", fill="both", expand=True)
         ctk.CTkLabel(main_frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=18, weight="bold"), text_color="#dbf2f6").pack(pady=20)
@@ -113,32 +125,61 @@ class App(ctk.CTk):
         self.mostrar_proyectos_grid(parent=main_frame)
 
     def mostrar_proyectos_grid(self, parent=None):
+        import customtkinter as ctk
+        from PIL import Image
+        import os
+        # Badge de color según estado
+        ESTADO_COLOR = {
+            "Excelente": "#4caf50",
+            "Buena": "#8bc34a",
+            "Media": "#ffc107",
+            "Mala": "#ff9800",
+            "Horrible": "#f44336"
+        }
         if parent is None:
             self.limpiar_pantalla()
             parent = ctk.CTkFrame(self, fg_color="transparent")
             parent.pack(fill="both", expand=True)
         proyectos = listar_proyectos()
         grid = ctk.CTkFrame(parent, fg_color="transparent")
-        grid.pack(pady=10, padx=10, fill="both", expand=True)
+        grid.pack(pady=20, padx=20, fill="both", expand=True)
+        columnas = 3
+        for i in range(columnas):
+            grid.grid_columnconfigure(i, weight=1, uniform="col")
+        filas = (len(proyectos) + columnas - 1) // columnas
+        for i in range(filas):
+            grid.grid_rowconfigure(i, weight=1, uniform="row")
         for idx, p in enumerate(proyectos):
-            card = ctk.CTkFrame(grid, width=250, height=220, fg_color="#21244e", corner_radius=10)
-            card.grid(row=idx//3, column=idx%3, padx=15, pady=15)
+            fila = idx // columnas
+            col = idx % columnas
+            card = ctk.CTkFrame(grid, width=280, height=320, fg_color="#21244e", corner_radius=16, border_width=2, border_color="#407996")
+            card.grid(row=fila, column=col, padx=24, pady=24, sticky="nsew")
+            # Imagen grande
             img_path = p[7] if p[7] and os.path.exists(p[7]) else os.path.join(Base_Dir, "static/placeholders/apt1.png")
             try:
-                img = Image.open(img_path).resize((90, 70))
-                img = ImageTk.PhotoImage(img)
+                img = Image.open(img_path).resize((220, 120))
+                img = CTkImage(img)
             except:
                 img = None
             if img:
-                ctk.CTkLabel(card, image=img, text="").pack(pady=5)
+                ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 5))
                 card.image = img
-            ctk.CTkLabel(card, text=p[1], font=ctk.CTkFont(size=15, weight="bold")).pack()
-            ctk.CTkLabel(card, text=f"Ubicación: {p[2]}").pack()
-            ctk.CTkLabel(card, text=f"Precio: ${p[3]:,.0f}").pack()
-            ctk.CTkLabel(card, text=f"Tamaño: {p[4]} m²").pack()
-            ctk.CTkLabel(card, text=f"Estado: {p[5]}").pack()
-            ctk.CTkButton(card, text="Ver detalles", width=120, command=lambda pid=p[0]: self.mostrar_detalle_proyecto(pid)).pack(pady=5)
-            ctk.CTkButton(card, text="Agendar cita", width=120, command=lambda pid=p[0]: self.mostrar_form_agendar(pid)).pack(pady=2)
+            # Título
+            ctk.CTkLabel(card, text=p[1], font=ctk.CTkFont(size=17, weight="bold"), text_color="#fff07e").pack(pady=(0, 2))
+            # Ubicación
+            ctk.CTkLabel(card, text=f"Ubicación: {p[2]}", font=ctk.CTkFont(size=13)).pack()
+            # Precio
+            ctk.CTkLabel(card, text=f"Precio: ${p[3]:,.0f}", font=ctk.CTkFont(size=13)).pack()
+            # Tamaño
+            ctk.CTkLabel(card, text=f"Tamaño: {p[4]} m²", font=ctk.CTkFont(size=13)).pack()
+            # Estado con badge
+            color_estado = ESTADO_COLOR.get(p[5], "#888")
+            estado_frame = ctk.CTkFrame(card, fg_color=color_estado, corner_radius=8)
+            estado_frame.pack(pady=4)
+            ctk.CTkLabel(estado_frame, text=f"Estado: {p[5]}", font=ctk.CTkFont(size=13, weight="bold"), text_color="#fff").pack(padx=8, pady=2)
+            # Botones uno debajo del otro
+            ctk.CTkButton(card, text="Ver detalles", width=200, fg_color="#407996", hover_color="#49829f", command=lambda pid=p[0]: self.mostrar_detalle_proyecto(pid)).pack(pady=5)
+            ctk.CTkButton(card, text="Agendar cita", width=200, fg_color="#4caf50", hover_color="#388e3c", command=lambda pid=p[0]: self.mostrar_form_agendar(pid)).pack(pady=5)
 
     def mostrar_detalle_proyecto(self, proyecto_id):
         p = obtener_proyecto(proyecto_id)
@@ -172,6 +213,7 @@ class App(ctk.CTk):
         from auth.email_utils import enviar_notificacion_cita
         import datetime
         self.limpiar_pantalla()
+        self.mostrar_navbar()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True)
         ctk.CTkLabel(frame, text="Agendar Cita", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
@@ -254,6 +296,7 @@ class App(ctk.CTk):
         from auth.email_utils import enviar_notificacion_cita
         import datetime
         self.limpiar_pantalla()
+        self.mostrar_navbar()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True, fill="both")
         ctk.CTkLabel(frame, text="Mis Citas", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
@@ -284,6 +327,7 @@ class App(ctk.CTk):
 
     def mostrar_contacto(self):
         self.limpiar_pantalla()
+        self.mostrar_navbar()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True)
         ctk.CTkLabel(frame, text="Contáctanos", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
@@ -294,6 +338,7 @@ class App(ctk.CTk):
         from auth.email_utils import enviar_soporte_tecnico
         import datetime
         self.limpiar_pantalla()
+        self.mostrar_navbar()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True)
         ctk.CTkLabel(frame, text="Soporte Técnico", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
@@ -330,6 +375,7 @@ class App(ctk.CTk):
 
     def mostrar_faq(self):
         self.limpiar_pantalla()
+        self.mostrar_navbar()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True)
         ctk.CTkLabel(frame, text="Preguntas Frecuentes", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
