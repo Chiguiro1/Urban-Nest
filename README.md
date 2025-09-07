@@ -2,24 +2,24 @@
 
 ## Instalación
 
-1. Clona el repositorio y entra a la carpeta:
+1. Clone el repositorio y entra a la carpeta:
    ```sh
    git clone <URL-del-repositorio>
    cd Urban-Nest
    ```
-2. Crea un entorno virtual (opcional pero recomendado):
+2. Cree un entorno virtual :
    ```sh
    python -m venv venv
    source venv/bin/activate  # En Windows: venv\Scripts\activate
    ```
-3. Instala las dependencias:
+3. Instale las dependencias:
    ```sh
    pip install -r requirements.txt
    ```
 
 ## Variables de entorno
 
-- Para el envío de emails, configura las variables de entorno:
+- Para el envío de emails, configure las variables de entorno:
   - `EMAIL_REMITENTE` (correo Gmail)
   - `EMAIL_PASSWORD` (contraseña de aplicación Gmail)
 
@@ -31,11 +31,11 @@ python src/main.py
 
 ## Cómo probar
 
-- Puedes iniciar sesión con el usuario de prueba:
+- Puede iniciar sesión con el usuario de prueba:
   - Email: `test@local`
   - Contraseña: `test123`
-- Prueba registrar un usuario nuevo, verificarlo y agendar/cancelar citas.
-- Prueba el formulario de soporte técnico y revisa los logs en la carpeta `logs/`.
+- Pruebe registrar un usuario nuevo, verificarlo y agendar/cancelar citas.
+- Pruebe el formulario de soporte técnico y revisa los logs en la carpeta `logs/`.
 
 ## Estructura del proyecto
 
@@ -49,9 +49,7 @@ python src/main.py
 ## Notas
 
 - Las contraseñas se almacenan con SHA-256 (en producción usar sal y PBKDF2/Bcrypt).
-- No subas tus credenciales de correo al repositorio público.
+- No suba sus credenciales de correo al repositorio público.
 - Para pruebas automáticas, puedes crear un archivo en `tests/` y usar `pytest`.
 
 ---
-
-**Urban Nest** — App escolar de bienes raíces (visualización y agendamiento de citas)

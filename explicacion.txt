@@ -41,11 +41,6 @@ Urban Nest es una aplicación de escritorio modular para la gestión y visualiza
 - Validaciones de negocio en backend y frontend.
 - Código modular, comentado y fácil de mantener.
 
-## Extensiones posibles
-- Recuperación/cambio de contraseña.
-- Paginación y búsqueda avanzada de proyectos.
-- Internacionalización (multi-idioma).
-- Panel de administración para gestión de usuarios y proyectos.
 
 ---
 
