@@ -1,10 +1,10 @@
-from database.models import crear_tabla
+from database.models import init_db
 from interfaces.gui import App
 import customtkinter as ctk
 
 def main():
     # Inicializar la base de datos
-    crear_tabla()
+    init_db()
     #-------------------------------
 
     # Crear y ejecutar la aplicación

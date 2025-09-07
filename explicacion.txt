@@ -1,0 +1,52 @@
+# Explicación de la aplicación Urban Nest
+
+## Arquitectura y Diseño
+
+Urban Nest es una aplicación de escritorio modular para la gestión y visualización de proyectos inmobiliarios y agendamiento de citas, construida con Python, SQLite y CustomTkinter. Utiliza una arquitectura de capas separando claramente la lógica de datos (models, crud), la lógica de negocio (crud, email_utils) y la interfaz de usuario (gui.py).
+
+### Capas principales:
+- **Base de datos (SQLite):**
+  - Tablas: usuarios, proyectos, citas.
+  - Seed automático de datos de ejemplo y usuario test.
+- **Capa de acceso a datos (models.py, crud.py):**
+  - models.py: Definición y creación de tablas, seed.
+  - crud.py: Funciones CRUD y validaciones de negocio.
+- **Capa de lógica de negocio:**
+  - Validaciones de citas, autenticación, envío de emails, logs.
+- **Capa de presentación (gui.py):**
+  - CustomTkinter para una UI moderna y responsiva.
+  - Pantallas: login, registro, verificación, panel de usuario, visualización de proyectos, agendamiento y gestión de citas, soporte, FAQ.
+
+## Flujo de datos y funcionamiento
+- El usuario se registra, verifica su email y accede al panel.
+- Puede visualizar proyectos (semilla), ver detalles y agendar citas.
+- Al agendar/cancelar una cita, se valida la disponibilidad y se notifica por email al usuario y a los asesores.
+- Todas las acciones importantes quedan registradas en logs (`logs/`).
+- El soporte técnico y FAQ están integrados en la UI.
+
+## Arquitectura utilizada
+- **Modelo-Vista-Controlador (MVC) simplificado:**
+  - Modelo: `models.py`, `crud.py` (acceso y lógica de datos)
+  - Vista: `gui.py` (interfaz CustomTkinter)
+  - Controlador: Lógica de interacción y validación en `gui.py` y `crud.py`
+- **Separación de responsabilidades:**
+  - Cada archivo tiene una función clara y documentada.
+- **Persistencia local:**
+  - SQLite como base de datos embebida, ideal para apps escolares y prototipos.
+
+## Datos importantes y buenas prácticas
+- Contraseñas hasheadas con SHA-256 (en producción usar sal y algoritmos más robustos).
+- Envío de emails seguro usando variables de entorno para credenciales.
+- Logs de soporte, citas y errores para trazabilidad y depuración.
+- Validaciones de negocio en backend y frontend.
+- Código modular, comentado y fácil de mantener.
+
+## Extensiones posibles
+- Recuperación/cambio de contraseña.
+- Paginación y búsqueda avanzada de proyectos.
+- Internacionalización (multi-idioma).
+- Panel de administración para gestión de usuarios y proyectos.
+
+---
+
+**Urban Nest** es un ejemplo de aplicación escolar robusta, modular y lista para ser extendida o adaptada a necesidades reales de negocio.

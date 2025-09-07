@@ -1,3 +1,4 @@
+import os
 import smtplib
 import random
 import ssl
@@ -10,8 +11,8 @@ import socket
 # =========================
 # INFORMACION DEL EMAIL DE ENVIO
 # =========================
-EMAIL_REMITENTE = 'auth.urbannest@gmail.com'
-CONTRASEÑA_EMAIL = 'grtx fuom lkah fbod'
+EMAIL_REMITENTE = os.environ.get('EMAIL_REMITENTE', 'auth.urbannest@gmail.com')
+CONTRASEÑA_EMAIL = os.environ.get('EMAIL_PASSWORD', 'grtx fuom lkah fbod')
 
 EMAIL_SOORTE_TECNICO = [
     "luis.rua@tecnicopascualbravo.edu.co",
@@ -25,29 +26,6 @@ EMAIL_SOORTE_TECNICO = [
 def generar_codigo():
     """Genera un código de verificación de 6 dígitos"""
     return str(random.randint(100000, 999999))
-
-# =========================
-#  OBTENCION DE IP PUBLICA Y LOCAL
-# =========================
-
-def obtener_ip_publica():
-    try:
-        ip = requests.get("https://api.ipify.org").text
-        return ip
-    except Exception as e:
-        return f"Error al obtener IP pública: {e}"
-
-def obtener_ip_local():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip_local = s.getsockname()[0]
-        s.close()
-        return ip_local
-    except Exception as e:
-        return f"Error al obtener IP local: {e}"
-
-
 
 
 # =========================
@@ -140,9 +118,49 @@ def enviar_codigo(destinatario, nombre_usuario):
             server.send_message(mensaje)
             return codigo
     except Exception as e:
-        print(f"Error al enviar email: {e}")
+        logs_dir = os.path.join(os.path.dirname(__file__), '../../logs')
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+        with open(os.path.join(logs_dir, 'errores.log'), 'a') as f:
+            f.write(f"[{datetime.datetime.now().isoformat()}] Error email verificación: {destinatario} - {e}\n")
         return None
 
+
+def enviar_notificacion_cita(email_usuario, nombre_usuario, proyecto_nombre, fecha, hora, tipo='creada'):
+    """
+    Envía notificación de cita tanto al usuario como a los 3 asesores.
+    """
+    asesores = [
+        "luis.rua@tecnicopascualbravo.edu.co",
+        "juan.jimenezm@tecnicopascualbravo.edu.co",
+        "quinterorojoemanuel@gmail.com"
+    ]
+    asunto = 'Cita Urban Nest confirmada' if tipo=='creada' else 'Cita Urban Nest cancelada'
+    cuerpo_usuario = f"Hola {nombre_usuario},\n\nTu cita para el proyecto '{proyecto_nombre}' el {fecha} a las {hora} ha sido {'agendada' if tipo=='creada' else 'cancelada'}.\n\nUrban Nest"
+    cuerpo_asesor = f"Nueva cita de usuario: {nombre_usuario} ({email_usuario})\nProyecto: {proyecto_nombre}\nFecha: {fecha}\nHora: {hora}\nEstado: {'Agendada' if tipo=='creada' else 'Cancelada'}\n\nUrban Nest"
+    mensaje_usuario = EmailMessage()
+    mensaje_usuario['From'] = EMAIL_REMITENTE
+    mensaje_usuario['To'] = email_usuario
+    mensaje_usuario['Subject'] = asunto
+    mensaje_usuario.set_content(cuerpo_usuario)
+    mensaje_asesor = EmailMessage()
+    mensaje_asesor['From'] = EMAIL_REMITENTE
+    mensaje_asesor['To'] = ', '.join(asesores)
+    mensaje_asesor['Subject'] = f"[Asesoría] {asunto}"
+    mensaje_asesor.set_content(cuerpo_asesor)
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_REMITENTE, CONTRASEÑA_EMAIL)
+            smtp.send_message(mensaje_usuario)
+            smtp.send_message(mensaje_asesor)
+        return True
+    except Exception as e:
+        logs_dir = os.path.join(os.path.dirname(__file__), '../../logs')
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+        with open(os.path.join(logs_dir, 'errores.log'), 'a') as f:
+            f.write(f"[{datetime.datetime.now().isoformat()}] Error email cita: {email_usuario} - {e}\n")
+        return False
 
 def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
     """Envía un mensaje al soporte técnico con nombre y correo del usuario"""
@@ -231,6 +249,10 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
             server.send_message(email)
             return True
     except Exception as e:
-        print(f"Error al enviar soporte técnico: {e}")
+        logs_dir = os.path.join(os.path.dirname(__file__), '../../logs')
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+        with open(os.path.join(logs_dir, 'errores.log'), 'a') as f:
+            f.write(f"[{datetime.datetime.now().isoformat()}] Error email soporte: {correo_usuario} - {e}\n")
         return False
 

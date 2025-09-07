@@ -1,105 +1,141 @@
 import sqlite3
 import hashlib
-from typing import Optional, Tuple
+from datetime import datetime, date
+import os
 
+DB_PATH = os.path.join(os.path.dirname(__file__), '../../usuarios.db')
+
+# ========== USUARIOS ==========
 def conectar():
-    """Establece conexión con la base de datos"""
-    return sqlite3.connect("usuarios.db")
+    return sqlite3.connect(DB_PATH)
 
 def hash_contraseña(contra: str) -> str:
-    """Genera hash SHA-256 de una contraseña"""
     return hashlib.sha256(contra.encode()).hexdigest()
 
-def crear_usuario(nombre: str, email: str, contra: str) -> bool:
-    """Crea un nuevo usuario en la base de datos"""
-    conn = None
+def crear_usuario(nombre, email, contra_plain):
     try:
         conn = conectar()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO usuarios (nombre, email, contra) VALUES (?, ?, ?)",
-            (nombre, email, hash_contraseña(contra))
-        )
+        contra_hash = hash_contraseña(contra_plain)
+        cursor.execute('INSERT INTO usuarios (nombre, email, contra) VALUES (?, ?, ?)', (nombre, email, contra_hash))
         conn.commit()
         return True
-    except sqlite3.IntegrityError as e:
-        print(f"Error al crear usuario: {e}")
+    except sqlite3.IntegrityError:
         return False
     finally:
-        if conn is not None:
-            conn.close()
+        conn.close()
 
-def verificar_usuario(email: str) -> bool:
-    """Verifica si el email existe en la base de datos"""
-    conn = None
+def verificar_usuario(email):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT 1 FROM usuarios WHERE email = ?', (email,))
+    res = cursor.fetchone()
+    conn.close()
+    return res is not None
+
+def verificar_usuario_contraseña(email, contra_plain):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT contra FROM usuarios WHERE email = ?', (email,))
+    res = cursor.fetchone()
+    conn.close()
+    if res:
+        return res[0] == hash_contraseña(contra_plain)
+    return False
+
+def marcar_como_verificado(email):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE usuarios SET verificado = 1 WHERE email = ?', (email,))
+    conn.commit()
+    ok = cursor.rowcount > 0
+    conn.close()
+    return ok
+
+def obtener_usuario_por_email(email):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM usuarios WHERE email = ?', (email,))
+    res = cursor.fetchone()
+    conn.close()
+    return res
+
+# ========== PROYECTOS ==========
+def listar_proyectos(limit=None, offset=None, filtros=None):
+    conn = conectar()
+    cursor = conn.cursor()
+    query = 'SELECT * FROM proyectos'
+    params = []
+    if filtros:
+        query += ' WHERE ' + ' AND '.join([f"{k}=?" for k in filtros])
+        params = list(filtros.values())
+    if limit:
+        query += ' LIMIT ?'
+        params.append(limit)
+    if offset:
+        query += ' OFFSET ?'
+        params.append(offset)
+    cursor.execute(query, params)
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+def obtener_proyecto(id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM proyectos WHERE id = ?', (id,))
+    res = cursor.fetchone()
+    conn.close()
+    return res
+
+# ========== CITAS ==========
+def crear_cita(usuario_id, proyecto_id, fecha, hora):
     try:
+        # Validaciones
+        hoy = date.today()
+        fecha_dt = datetime.strptime(fecha, '%Y-%m-%d').date()
+        if fecha_dt < hoy:
+            return False, 'No puedes agendar en días pasados.'
+        if fecha_dt.weekday() > 4:
+            return False, 'Solo puedes agendar de lunes a viernes.'
+        hora_permitidas = [f"{h:02d}:{m:02d}" for h in range(9, 17) for m in (0,30)]
+        if hora not in hora_permitidas:
+            return False, 'Hora fuera de rango permitido.'
         conn = conectar()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT 1 FROM usuarios WHERE email = ?", 
-            (email,)
-        )
-        resultado = cursor.fetchone()
-        return resultado is not None
-    except sqlite3.Error as e:
-        print(f"Error al verificar email: {e}")
-        return False
-    finally:
-        if conn is not None:
+        # Doble reserva
+        cursor.execute('''SELECT 1 FROM citas WHERE proyecto_id=? AND fecha=? AND hora=? AND estado='Agendada' ''', (proyecto_id, fecha, hora))
+        if cursor.fetchone():
             conn.close()
-
-def verificar_usuario_contraseña(email: str, contra: str) -> bool:
-    """Verifica si el email y la contraseña coinciden"""
-    conn = None
-    try:
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT contra FROM usuarios WHERE email = ?", 
-            (email,)
-        )
-        resultado = cursor.fetchone()
-        if resultado and resultado[0] == hash_contraseña(contra):
-            return True
-        return False
-    except sqlite3.Error as e:
-        print(f"Error al verificar usuario y contraseña: {e}")
-        return False
-    finally:
-        if conn is not None:
-            conn.close()
-
-def obtener_email_usuario(nombre: str) -> Optional[str]:
-    """Obtiene el email de un usuario por su nombre"""
-    conn = None
-    try:
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute("SELECT email FROM usuarios WHERE nombre = ?", (nombre,))
-        resultado = cursor.fetchone()
-        return resultado[0] if resultado else None
-    except sqlite3.Error as e:
-        print(f"Error al obtener email: {e}")
-        return None
-    finally:
-        if conn is not None:
-            conn.close()
-
-def marcar_como_verificado(nombre: str) -> bool:
-    """Marca un usuario como verificado por email"""
-    conn = None
-    try:
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute(
-            "UPDATE usuarios SET verificado = 1 WHERE nombre = ?",
-            (nombre,)
-        )
+            return False, 'Ya existe una cita para ese proyecto en ese horario.'
+        cursor.execute('''INSERT INTO citas (usuario_id, proyecto_id, fecha, hora, estado) VALUES (?, ?, ?, ?, 'Agendada')''', (usuario_id, proyecto_id, fecha, hora))
         conn.commit()
-        return cursor.rowcount > 0
-    except sqlite3.Error as e:
-        print(f"Error al marcar como verificado: {e}")
-        return False
-    finally:
-        if conn is not None:
-            conn.close()
+        conn.close()
+        return True, 'Cita agendada correctamente.'
+    except Exception as e:
+        return False, str(e)
+
+def listar_citas_por_usuario(usuario_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM citas WHERE usuario_id = ? ORDER BY fecha, hora', (usuario_id,))
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+def cancelar_cita(cita_id, usuario_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE citas SET estado = "Cancelada" WHERE id = ? AND usuario_id = ?', (cita_id, usuario_id))
+    conn.commit()
+    ok = cursor.rowcount > 0
+    conn.close()
+    return ok
+
+def listar_citas_por_proyecto(proyecto_id, fecha):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('SELECT hora FROM citas WHERE proyecto_id = ? AND fecha = ? AND estado = "Agendada"', (proyecto_id, fecha))
+    res = [r[0] for r in cursor.fetchall()]
+    conn.close()
+    return res
