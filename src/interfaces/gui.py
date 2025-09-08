@@ -35,14 +35,17 @@ class App(ctk.CTk):
 
     def mostrar_login(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self)
+        self.configure(bg_color="#e6ecf5")  # Fondo más claro
+        frame = ctk.CTkFrame(self, width=420, height=420, fg_color="#407996")
         frame.pack(expand=True)
-        ctk.CTkLabel(frame, image=self.logo_img, text="").pack(pady=10)
-        ctk.CTkLabel(frame, text="Iniciar Sesión", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
-        email_entry = ctk.CTkEntry(frame, placeholder_text="Correo electrónico", width=250)
-        email_entry.pack(pady=5)
-        pass_entry = ctk.CTkEntry(frame, placeholder_text="Contraseña", show="*", width=250)
-        pass_entry.pack(pady=5)
+        frame.pack_propagate(False)
+        # Elimino el logo
+        ctk.CTkLabel(frame, text="").pack(pady=18)
+        ctk.CTkLabel(frame, text="Iniciar Sesión", font=ctk.CTkFont(size=26, weight="bold"), text_color="#fff").pack(pady=16)
+        email_entry = ctk.CTkEntry(frame, placeholder_text="Correo electrónico", width=280)
+        email_entry.pack(pady=10)
+        pass_entry = ctk.CTkEntry(frame, placeholder_text="Contraseña", show="*", width=280)
+        pass_entry.pack(pady=10)
         def login_action():
             email = email_entry.get()
             contra = pass_entry.get()
@@ -61,21 +64,46 @@ class App(ctk.CTk):
                 return
             self.usuario_actual = email
             self.mostrar_panel_usuario()
-        ctk.CTkButton(frame, text="Ingresar", command=login_action, width=200).pack(pady=10)
-        ctk.CTkButton(frame, text="Registrarse", command=self.mostrar_registro, width=200, fg_color="#407996").pack(pady=5)
+        ctk.CTkButton(frame, text="Ingresar", command=login_action, width=240, fg_color="#21244e", hover_color="#1e214b").pack(pady=14)
+        ctk.CTkButton(frame, text="Registrarse", command=self.mostrar_registro, width=240, fg_color="#ffb347", hover_color="#ff9800", text_color="#21244e").pack(pady=6)
+
+    def mostrar_verificacion_email(self, email):
+        self.limpiar_pantalla()
+        self.configure(bg_color="#e6ecf5")
+        frame = ctk.CTkFrame(self, width=420, height=260, fg_color="#407996")
+        frame.pack(expand=True)
+        frame.pack_propagate(False)
+        ctk.CTkLabel(frame, text="Verificación de correo", font=ctk.CTkFont(size=22, weight="bold"), text_color="#fff").pack(pady=18)
+        ctk.CTkLabel(frame, text=f"Se envió un código a\n{email}", text_color="#fff").pack(pady=6)
+        codigo_entry = ctk.CTkEntry(frame, placeholder_text="Código de verificación", width=180)
+        codigo_entry.pack(pady=10)
+        def verificar_codigo():
+            codigo = codigo_entry.get()
+            if not codigo:
+                messagebox.showerror("Error", "Ingresa el código de verificación.")
+                return
+            if marcar_como_verificado(email, codigo):
+                messagebox.showinfo("Verificado", "Correo verificado correctamente.")
+                self.mostrar_login()
+            else:
+                messagebox.showerror("Error", "Código incorrecto o expirado.")
+        ctk.CTkButton(frame, text="Verificar", command=verificar_codigo, width=180, fg_color="#21244e", hover_color="#1e214b").pack(pady=10)
+        ctk.CTkButton(frame, text="Volver", command=self.mostrar_login, width=180, fg_color="#ffb347", hover_color="#ff9800", text_color="#21244e").pack(pady=4)
 
     def mostrar_registro(self):
         self.limpiar_pantalla()
-        frame = ctk.CTkFrame(self)
+        self.configure(bg_color="#e6ecf5")  # Fondo más claro
+        frame = ctk.CTkFrame(self, width=420, height=470, fg_color="#407996")
         frame.pack(expand=True)
-        ctk.CTkLabel(frame, image=self.logo_img, text="").pack(pady=10)
-        ctk.CTkLabel(frame, text="Registro de Usuario", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=10)
-        nombre_entry = ctk.CTkEntry(frame, placeholder_text="Nombre completo", width=250)
-        nombre_entry.pack(pady=5)
-        email_entry = ctk.CTkEntry(frame, placeholder_text="Correo electrónico", width=250)
-        email_entry.pack(pady=5)
-        pass_entry = ctk.CTkEntry(frame, placeholder_text="Contraseña", show="*", width=250)
-        pass_entry.pack(pady=5)
+        frame.pack_propagate(False)
+        ctk.CTkLabel(frame, text="").pack(pady=18)
+        ctk.CTkLabel(frame, text="Registro de Usuario", font=ctk.CTkFont(size=26, weight="bold"), text_color="#fff").pack(pady=16)
+        nombre_entry = ctk.CTkEntry(frame, placeholder_text="Nombre completo", width=280)
+        nombre_entry.pack(pady=10)
+        email_entry = ctk.CTkEntry(frame, placeholder_text="Correo electrónico", width=280)
+        email_entry.pack(pady=10)
+        pass_entry = ctk.CTkEntry(frame, placeholder_text="Contraseña", show="*", width=280)
+        pass_entry.pack(pady=10)
         def registro_action():
             nombre = nombre_entry.get()
             email = email_entry.get()
@@ -88,23 +116,28 @@ class App(ctk.CTk):
                 return
             if crear_usuario(nombre, email, contra):
                 messagebox.showinfo("Registro exitoso", "Usuario registrado. Revisa tu correo para el código de verificación.")
-                self.mostrar_login()
+                self.mostrar_verificacion_email(email)
             else:
                 messagebox.showerror("Error", "El correo ya está registrado.")
-        ctk.CTkButton(frame, text="Registrar", command=registro_action, width=200).pack(pady=10)
-        ctk.CTkButton(frame, text="Volver", command=self.mostrar_login, width=200, fg_color="#407996").pack(pady=5)
+        ctk.CTkButton(frame, text="Registrar", command=registro_action, width=240, fg_color="#21244e", hover_color="#1e214b").pack(pady=14)
+        ctk.CTkButton(frame, text="Volver", command=self.mostrar_login, width=240, fg_color="#ffb347", hover_color="#ff9800", text_color="#21244e").pack(pady=6)
 
     def mostrar_navbar(self):
         # Elimina cualquier navbar anterior
         for widget in self.winfo_children():
             if isinstance(widget, ctk.CTkFrame) and getattr(widget, 'is_navbar', False):
                 widget.destroy()
+        nombre_usuario = None
+        if self.usuario_actual:
+            user = obtener_usuario_por_email(self.usuario_actual)
+            if user:
+                nombre_usuario = user[1]
         navbar = ctk.CTkFrame(self, height=60, fg_color="#1e214b")
         navbar.is_navbar = True
         navbar.pack(side="top", fill="x")
         navbar.grid_columnconfigure(0, weight=1)
         navbar.grid_columnconfigure(1, weight=8)
-        ctk.CTkLabel(navbar, text=f"Usuario: {self.usuario_actual}", font=ctk.CTkFont(size=14), text_color="#dbf2f6", fg_color="#1e214b").grid(row=0, column=0, padx=20, pady=10, sticky="w")
+        ctk.CTkLabel(navbar, text=f"Usuario: {nombre_usuario if nombre_usuario else ''}", font=ctk.CTkFont(size=14), text_color="#dbf2f6", fg_color="#1e214b").grid(row=0, column=0, padx=20, pady=10, sticky="w")
         nav_btn_frame = ctk.CTkFrame(navbar, fg_color="#407996")
         nav_btn_frame.grid(row=0, column=1, pady=10, padx=10, sticky="e")
         btn_style = {"fg_color": "#407996", "hover_color": "#49829f", "text_color": "#fff", "corner_radius": 8, "border_width": 0, "height": 32, "width": 110}
@@ -118,9 +151,14 @@ class App(ctk.CTk):
     def mostrar_panel_usuario(self):
         self.limpiar_pantalla()
         self.mostrar_navbar()
+        nombre_usuario = None
+        if self.usuario_actual:
+            user = obtener_usuario_por_email(self.usuario_actual)
+            if user:
+                nombre_usuario = user[1]
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(side="left", fill="both", expand=True)
-        ctk.CTkLabel(main_frame, text=f"Bienvenido, {self.usuario_actual}", font=ctk.CTkFont(size=18, weight="bold"), text_color="#dbf2f6").pack(pady=20)
+        ctk.CTkLabel(main_frame, text=f"Bienvenido, {nombre_usuario if nombre_usuario else ''}", font=ctk.CTkFont(size=18, weight="bold"), text_color="#dbf2f6").pack(pady=20)
         ctk.CTkLabel(main_frame, text="Proyectos disponibles", font=ctk.CTkFont(size=20, weight="bold"), text_color="#fff07e").pack(pady=10)
         self.mostrar_proyectos_grid(parent=main_frame)
 

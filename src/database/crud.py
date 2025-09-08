@@ -1,7 +1,8 @@
 import sqlite3
 import hashlib
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
+from auth.email_utils import enviar_codigo
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '../../usuarios.db')
 
@@ -17,7 +18,13 @@ def crear_usuario(nombre, email, contra_plain):
         conn = conectar()
         cursor = conn.cursor()
         contra_hash = hash_contraseña(contra_plain)
-        cursor.execute('INSERT INTO usuarios (nombre, email, contra) VALUES (?, ?, ?)', (nombre, email, contra_hash))
+        # Generar código y expiración
+        codigo = enviar_codigo(email, nombre)
+        if not codigo:
+            conn.close()
+            return False
+        expira = (datetime.now() + timedelta(minutes=10)).isoformat()
+        cursor.execute('INSERT INTO usuarios (nombre, email, contra, codigo_verificacion, codigo_expira) VALUES (?, ?, ?, ?, ?)', (nombre, email, contra_hash, codigo, expira))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -43,10 +50,25 @@ def verificar_usuario_contraseña(email, contra_plain):
         return res[0] == hash_contraseña(contra_plain)
     return False
 
-def marcar_como_verificado(email):
+def marcar_como_verificado(email, codigo):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute('UPDATE usuarios SET verificado = 1 WHERE email = ?', (email,))
+    cursor.execute('SELECT codigo_verificacion, codigo_expira FROM usuarios WHERE email = ?', (email,))
+    res = cursor.fetchone()
+    if not res:
+        conn.close()
+        return False
+    codigo_db, expira_db = res
+    if not codigo_db or not expira_db:
+        conn.close()
+        return False
+    if codigo != codigo_db:
+        conn.close()
+        return False
+    if datetime.now() > datetime.fromisoformat(expira_db):
+        conn.close()
+        return False
+    cursor.execute('UPDATE usuarios SET verificado = 1, codigo_verificacion = NULL, codigo_expira = NULL WHERE email = ?', (email,))
     conn.commit()
     ok = cursor.rowcount > 0
     conn.close()
@@ -139,5 +161,3 @@ def listar_citas_por_proyecto(proyecto_id, fecha):
     res = [r[0] for r in cursor.fetchall()]
     conn.close()
     return res
-
-# (No hay referencias a IA en este archivo)

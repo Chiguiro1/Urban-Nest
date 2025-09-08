@@ -143,23 +143,27 @@ def enviar_notificacion_cita(email_usuario, nombre_usuario, proyecto_nombre, fec
     mensaje_usuario['To'] = email_usuario
     mensaje_usuario['Subject'] = asunto
     mensaje_usuario.set_content(cuerpo_usuario)
-    mensaje_asesor = EmailMessage()
-    mensaje_asesor['From'] = EMAIL_REMITENTE
-    mensaje_asesor['To'] = ', '.join(asesores)
-    mensaje_asesor['Subject'] = f"[Asesoría] {asunto}"
-    mensaje_asesor.set_content(cuerpo_asesor)
+    mensajes_asesores = []
+    for asesor in asesores:
+        mensaje_asesor = EmailMessage()
+        mensaje_asesor['From'] = EMAIL_REMITENTE
+        mensaje_asesor['To'] = asesor
+        mensaje_asesor['Subject'] = f"[Asesoría] {asunto}"
+        mensaje_asesor.set_content(cuerpo_asesor)
+        mensajes_asesores.append(mensaje_asesor)
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login(EMAIL_REMITENTE, CONTRASEÑA_EMAIL)
             smtp.send_message(mensaje_usuario)
-            smtp.send_message(mensaje_asesor)
+            for mensaje_asesor in mensajes_asesores:
+                smtp.send_message(mensaje_asesor)
         return True
     except Exception as e:
         logs_dir = os.path.join(os.path.dirname(__file__), '../../logs')
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
         with open(os.path.join(logs_dir, 'errores.log'), 'a') as f:
-            f.write(f"[{datetime.datetime.now().isoformat()}] Error email cita: {email_usuario} - {e}\n")
+            f.write(f"[{datetime.datetime.now().isoformat()}] Error email cita: {email_usuario} y asesores - {e}\n")
         return False
 
 def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
@@ -255,6 +259,4 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
         with open(os.path.join(logs_dir, 'errores.log'), 'a') as f:
             f.write(f"[{datetime.datetime.now().isoformat()}] Error email soporte: {correo_usuario} - {e}\n")
         return False
-
-# (No hay referencias a IA en este archivo)
 

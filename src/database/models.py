@@ -18,6 +18,8 @@ def crear_tabla_usuarios():
             email TEXT NOT NULL UNIQUE,
             contra TEXT NOT NULL,
             verificado INTEGER DEFAULT 0,
+            codigo_verificacion TEXT,
+            codigo_expira TIMESTAMP,
             creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -104,4 +106,3 @@ def init_db():
     crear_tabla_proyectos()
     crear_tabla_citas()
     seed_db()
-# (No hay referencias a IA en este archivo)
