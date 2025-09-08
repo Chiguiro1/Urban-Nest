@@ -227,12 +227,6 @@ def enviar_soporte_tecnico(nombre_usuario, correo_usuario, asunto, mensaje):
                 <span class="label">Correo del usuario:</span> {correo_usuario}
             </div>
             <div class="field">
-                <span class="label">IP Local:</span> {obtener_ip_local()}
-            </div>
-            <div class="field">
-                <span class="label">IP Pública:</span> {obtener_ip_publica()}
-            </div>
-            <div class="field">
                 <span class="label">Asunto:</span> {asunto}
             </div>
             <div class="field">

@@ -44,7 +44,6 @@ python src/main.py
 - `src/interfaces/gui.py`: Interfaz gráfica y lógica de usuario.
 - `src/auth/email_utils.py`: Envío de emails y soporte.
 - `logs/`: Carpeta de logs de soporte, citas y errores.
-- `static/placeholders/`: Imágenes de ejemplo para proyectos.
 
 ## Notas
 
@@ -52,4 +51,5 @@ python src/main.py
 - No suba sus credenciales de correo al repositorio público.
 - Para pruebas automáticas, puedes crear un archivo en `tests/` y usar `pytest`.
 
+## PostData
 ---

@@ -172,7 +172,7 @@ class App(ctk.CTk):
             "Buena": "#8bc34a",
             "Media": "#ffc107",
             "Mala": "#ff9800",
-            "Horrible": "#f44336"
+            "Deteriorada": "#f44336"
         }
         if parent is None:
             self.limpiar_pantalla()
@@ -187,37 +187,78 @@ class App(ctk.CTk):
         filas = (len(proyectos) + columnas - 1) // columnas
         for i in range(filas):
             grid.grid_rowconfigure(i, weight=1, uniform="row")
+        images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../images'))
+        image_files = [os.path.join(images_dir, f'a{i+1}.jpeg') for i in range(6)]
         for idx, p in enumerate(proyectos):
             fila = idx // columnas
             col = idx % columnas
-            card = ctk.CTkFrame(grid, width=280, height=320, fg_color="#21244e", corner_radius=16, border_width=2, border_color="#407996")
+            card = ctk.CTkFrame(grid, width=400, height=220, fg_color="#21244e", corner_radius=16, border_width=2, border_color="#407996")
             card.grid(row=fila, column=col, padx=24, pady=24, sticky="nsew")
-            # Imagen grande
-            img_path = p[7] if p[7] and os.path.exists(p[7]) else os.path.join(Base_Dir, "static/placeholders/apt1.png")
+            # Título
+            ctk.CTkLabel(card, text=p[1], font=ctk.CTkFont(size=18, weight="bold"), text_color="#00e6e6").pack(pady=(16, 2))
+            # Ubicación
+            ctk.CTkLabel(card, text=f"Ubicación: {p[2]}", font=ctk.CTkFont(size=14), text_color="#fff").pack()
+            # Precio
+            ctk.CTkLabel(card, text=f"Precio: ${p[3]:,.0f}", font=ctk.CTkFont(size=14), text_color="#fff").pack()
+            # Tamaño
+            ctk.CTkLabel(card, text=f"Tamaño: {p[4]} m²", font=ctk.CTkFont(size=14), text_color="#fff").pack()
+            # Estado con badge
+            estado = p[5] if p[5] != "Horrible" else "Deteriorada"
+            color_estado = ESTADO_COLOR.get(estado, "#888")
+            estado_frame = ctk.CTkFrame(card, fg_color=color_estado, corner_radius=8)
+            estado_frame.pack(pady=4)
+            ctk.CTkLabel(estado_frame, text=f"Estado: {estado}", font=ctk.CTkFont(size=14, weight="bold"), text_color="#fff").pack(padx=8, pady=2)
+            # Botón Detalles
+            ctk.CTkButton(card, text="Detalles", width=300, fg_color="#407996", hover_color="#49829f", command=lambda idx=idx, pid=p[0]: self.mostrar_detalle_proyecto_custom(idx, pid)).pack(pady=2)
+
+    def mostrar_detalle_proyecto_custom(self, idx, proyecto_id):
+        import customtkinter as ctk
+        from PIL import Image
+        import os
+        self.limpiar_pantalla()
+        frame = ctk.CTkFrame(self, width=700, height=600, fg_color="#21244e")
+        frame.pack(expand=True)
+        frame.pack_propagate(False)
+        proyectos = listar_proyectos()
+        p = None
+        for pr in proyectos:
+            if pr[0] == proyecto_id:
+                p = pr
+                break
+        if not p:
+            messagebox.showerror("Error", "Proyecto no encontrado.")
+            return
+        images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../images'))
+        image_files = [os.path.join(images_dir, f'a{i+1}.jpeg') for i in range(6)]
+        img_path = image_files[idx % len(image_files)] if os.path.exists(image_files[idx % len(image_files)]) else None
+        img = None
+        if img_path:
             try:
-                img = Image.open(img_path).resize((220, 120))
+                img = Image.open(img_path).resize((500, 320))
                 img = CTkImage(img)
             except:
                 img = None
-            if img:
-                ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 5))
-                card.image = img
-            # Título
-            ctk.CTkLabel(card, text=p[1], font=ctk.CTkFont(size=17, weight="bold"), text_color="#fff07e").pack(pady=(0, 2))
-            # Ubicación
-            ctk.CTkLabel(card, text=f"Ubicación: {p[2]}", font=ctk.CTkFont(size=13)).pack()
-            # Precio
-            ctk.CTkLabel(card, text=f"Precio: ${p[3]:,.0f}", font=ctk.CTkFont(size=13)).pack()
-            # Tamaño
-            ctk.CTkLabel(card, text=f"Tamaño: {p[4]} m²", font=ctk.CTkFont(size=13)).pack()
-            # Estado con badge
-            color_estado = ESTADO_COLOR.get(p[5], "#888")
-            estado_frame = ctk.CTkFrame(card, fg_color=color_estado, corner_radius=8)
-            estado_frame.pack(pady=4)
-            ctk.CTkLabel(estado_frame, text=f"Estado: {p[5]}", font=ctk.CTkFont(size=13, weight="bold"), text_color="#fff").pack(padx=8, pady=2)
-            # Botones uno debajo del otro
-            ctk.CTkButton(card, text="Ver detalles", width=200, fg_color="#407996", hover_color="#49829f", command=lambda pid=p[0]: self.mostrar_detalle_proyecto(pid)).pack(pady=5)
-            ctk.CTkButton(card, text="Agendar cita", width=200, fg_color="#4caf50", hover_color="#388e3c", command=lambda pid=p[0]: self.mostrar_form_agendar(pid)).pack(pady=5)
+        if img:
+            ctk.CTkLabel(frame, image=img, text="").pack(pady=(18, 10))
+            frame.image = img
+        ctk.CTkLabel(frame, text=p[1], font=ctk.CTkFont(size=22, weight="bold"), text_color="#00e6e6").pack(pady=(0, 6))
+        ctk.CTkLabel(frame, text=f"Ubicación: {p[2]}", font=ctk.CTkFont(size=15), text_color="#fff").pack()
+        ctk.CTkLabel(frame, text=f"Precio: ${p[3]:,.0f}", font=ctk.CTkFont(size=15), text_color="#fff").pack()
+        ctk.CTkLabel(frame, text=f"Tamaño: {p[4]} m²", font=ctk.CTkFont(size=15), text_color="#fff").pack()
+        estado = p[5] if p[5] != "Horrible" else "Deteriorada"
+        ctk.CTkLabel(frame, text=f"Estado: {estado}", font=ctk.CTkFont(size=15, weight="bold"), text_color="#fff").pack(pady=(0, 8))
+        # Descripciones personalizadas
+        descripciones = [
+            "Este apartamento en Laureles combina modernidad y comodidad en un entorno urbano privilegiado. Sus amplios espacios y acabados de alta calidad lo convierten en una excelente opción para familias o profesionales que buscan un lugar tranquilo y bien ubicado. La cercanía a parques, restaurantes y centros comerciales garantiza una vida social activa y todas las comodidades a la mano. Además, la seguridad y el ambiente residencial hacen de este apartamento una inversión segura y atractiva para quienes valoran el bienestar y la calidad de vida en la ciudad.",
+            "Esta casa en El Poblado destaca por su amplitud y su hermoso jardín, ideal para quienes disfrutan de la naturaleza sin salir de la ciudad. La propiedad cuenta con espacios generosos, iluminación natural y una distribución funcional que permite el máximo aprovechamiento de cada ambiente. Su ubicación estratégica facilita el acceso a colegios, centros comerciales y vías principales, haciendo de esta casa una opción perfecta para familias que buscan confort, privacidad y un entorno seguro en una de las zonas más exclusivas de la ciudad.",
+            "El loft en Envigado es la elección ideal para parejas jóvenes o profesionales que buscan un espacio moderno y funcional. Su diseño abierto y contemporáneo maximiza la luz y el espacio, creando un ambiente acogedor y versátil. Ubicado cerca de zonas comerciales y de entretenimiento, este loft ofrece la combinación perfecta entre tranquilidad y acceso a la vida urbana. Es una excelente oportunidad para quienes desean invertir en una propiedad con gran potencial de valorización y calidad de vida.",
+            "El penthouse en el Centro ofrece una vista panorámica inigualable de la ciudad, ideal para quienes disfrutan de los paisajes urbanos. Sus amplios ventanales y terrazas permiten disfrutar de atardeceres únicos y un ambiente luminoso durante todo el día. Aunque requiere algunas mejoras, su ubicación privilegiada y el potencial de personalización lo convierten en una excelente opción para quienes buscan un hogar exclusivo y con carácter propio en el corazón de la ciudad.",
+            "Este apartamento en Belén se caracteriza por su proximidad a parques y zonas verdes, lo que lo hace perfecto para familias y amantes de la naturaleza. Sus espacios bien distribuidos y su ambiente tranquilo ofrecen el equilibrio ideal entre vida urbana y contacto con el entorno natural. La zona cuenta con excelentes servicios, transporte público y opciones de recreación, haciendo de este apartamento una alternativa atractiva para quienes buscan calidad de vida y comodidad.",
+            "La casa en Robledo es una opción familiar que destaca por su amplitud y su potencial de renovación. Aunque presenta signos de deterioro, ofrece una base sólida para quienes desean remodelar y personalizar su hogar. Su ubicación en un sector tradicional brinda acceso a colegios, comercios y transporte, convirtiéndola en una oportunidad interesante para quienes buscan invertir en una propiedad con posibilidades de crecimiento y valorización a futuro."
+        ]
+        ctk.CTkLabel(frame, text=descripciones[idx], font=ctk.CTkFont(size=14), text_color="#fff", wraplength=650, justify="left").pack(pady=(10, 18))
+        ctk.CTkButton(frame, text="Agendar cita", width=300, fg_color="#4caf50", hover_color="#388e3c", command=lambda pid=p[0]: self.mostrar_form_agendar(pid)).pack(pady=8)
+        ctk.CTkButton(frame, text="Volver", width=300, fg_color="#407996", command=self.mostrar_panel_usuario).pack(pady=4)
 
     def mostrar_detalle_proyecto(self, proyecto_id):
         p = obtener_proyecto(proyecto_id)

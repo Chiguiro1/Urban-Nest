@@ -1,5 +1,21 @@
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.log
 venv/
-usuarios.db
-urban_nest
+.env/
+env/
+.venv/
+build/
+dist/
+*.spec
+logs/
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+expl*   # ej: explicacion.txt si no quieres que suba
