@@ -2,7 +2,6 @@
 
 ## Arquitectura y Diseño
 
-Urban Nest es una aplicación de escritorio modular para la gestión y visualización de proyectos inmobiliarios y agendamiento de citas, construida con Python, SQLite y CustomTkinter. Utiliza una arquitectura de capas separando claramente la lógica de datos (models, crud), la lógica de negocio (crud, email_utils) y la interfaz de usuario (gui.py).
 
 ### Capas principales:
 - **Base de datos (SQLite):**
