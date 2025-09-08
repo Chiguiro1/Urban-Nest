@@ -52,4 +52,6 @@ python src/main.py
 - Para pruebas automáticas, puedes crear un archivo en `tests/` y usar `pytest`.
 
 ## PostData
+
+Soy una puta bestia
 ---
