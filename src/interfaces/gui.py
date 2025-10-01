@@ -286,13 +286,15 @@ class App(ctk.CTk):
         img = None
         if img_path:
             try:
-                img = Image.open(img_path).resize((500, 320))
-                img = CTkImage(img)
+                pil_img = Image.open(img_path)
+                display_size = (700, 450)
+                pil_img = pil_img.resize(display_size)
+                img = CTkImage(light_image=pil_img, dark_image=pil_img, size=display_size)
             except Exception as e:
                 print("Error cargando imagen principal:", e)
                 img = None
         if img:
-            lbl_main = ctk.CTkLabel(content_frame, image=img, text="")
+            lbl_main = ctk.CTkLabel(content_frame, image=img, text="", width=700, height=450)
             lbl_main.pack(pady=(10, 15))
             lbl_main.image = img
 
@@ -322,14 +324,16 @@ class App(ctk.CTk):
             ctk.CTkLabel(content_frame, text="Galería de imágenes:", font=ctk.CTkFont(size=16, weight="bold"), text_color="#fff07e").pack(pady=(10, 5))
             galeria_frame = ctk.CTkFrame(content_frame, fg_color="#1e214b")
             galeria_frame.pack(pady=10, fill="x")
-            for img_file in image_files:
+            for i, img_file in enumerate(image_files):
                 if os.path.exists(img_file):
                     try:
-                        thumb = Image.open(img_file).resize((120, 90))
-                        thumb_ctk = CTkImage(light_image=thumb, dark_image=thumb, size=(120, 90))
+                        thumb = Image.open(img_file).resize((180, 135))
+                        thumb_ctk = CTkImage(light_image=thumb, dark_image=thumb, size=(180, 135))
                         lbl = ctk.CTkLabel(galeria_frame, image=thumb_ctk, text="")
                         lbl.pack(side="left", padx=5, pady=5)
                         lbl.image = thumb_ctk
+                        # Vincula el click a la función del carrusel
+                        lbl.bind("<Button-1>", lambda e, idx=i: self.mostrar_carrusel_imagenes(image_files, idx))
                     except Exception as e:
                         print("Error cargando miniatura:", e)
 
@@ -349,6 +353,51 @@ class App(ctk.CTk):
         ctk.CTkButton(btn_container, text="Volver", width=200, height=40,
                      fg_color="#407996", hover_color="#49829f",
                      command=self.mostrar_panel_usuario).pack(side="left", padx=20, pady=10)
+
+    # -------------------------
+    # CARRUSEL DE IMÁGENES
+    # -------------------------
+    def mostrar_carrusel_imagenes(self, image_files, start_idx):
+        # Ventana modal para el carrusel
+        carrusel = ctk.CTkToplevel(self)
+        carrusel.title("Galería de imágenes")
+        carrusel.geometry("900x650")
+        carrusel.grab_set()  # Modal
+
+        img_label = ctk.CTkLabel(carrusel, text="")
+        img_label.pack(pady=20)
+
+        idx = [start_idx]  # mutable para closures
+
+        def mostrar_imagen():
+            img_path = image_files[idx[0]]
+            if os.path.exists(img_path):
+                pil_img = Image.open(img_path)
+                display_size = (800, 500)
+                pil_img = pil_img.resize(display_size)
+                img = CTkImage(light_image=pil_img, dark_image=pil_img, size=display_size)
+                img_label.configure(image=img, width=800, height=500)
+                img_label.image = img
+                img_label.text = ""
+            else:
+                img_label.configure(text="Imagen no encontrada", image=None)
+
+        def anterior():
+            idx[0] = (idx[0] - 1) % len(image_files)
+            mostrar_imagen()
+
+        def siguiente():
+            idx[0] = (idx[0] + 1) % len(image_files)
+            mostrar_imagen()
+
+        btn_frame = ctk.CTkFrame(carrusel, fg_color="transparent")
+        btn_frame.pack(pady=10)
+
+        ctk.CTkButton(btn_frame, text="Anterior", width=120, command=anterior).pack(side="left", padx=10)
+        ctk.CTkButton(btn_frame, text="Siguiente", width=120, command=siguiente).pack(side="left", padx=10)
+        ctk.CTkButton(btn_frame, text="Salir", width=120, fg_color="#e57373", hover_color="#c62828", command=carrusel.destroy).pack(side="left", padx=10)
+
+        mostrar_imagen()
 
     # -------------------------
     # DETALLE SIMPLE (otra función del repo)
